@@ -4,20 +4,26 @@ namespace Redis.SQL.Client
 {
     internal sealed class RedisConnectionMultiplexer
     {
-        public static readonly string RedisConnectionKey = "RedisConnectionKey";
+        private const string RedisConnectionKey = "RedisConnectionKey";
 
         private static RedisConnectionMultiplexer _multiplexer;
 
         internal readonly ConnectionMultiplexer Connection;
 
+        private static readonly object Locker = new object();
+
         private RedisConnectionMultiplexer()
         {
-            Connection = ConnectionMultiplexer.Connect(RedisConnectionKey);
+            var configurationManager = new ConfigurationManager();
+            Connection = ConnectionMultiplexer.Connect(configurationManager.GetConfigKey(RedisConnectionKey));
         }
 
-        internal RedisConnectionMultiplexer GetMultiplexer()
+        internal static RedisConnectionMultiplexer GetMultiplexer()
         {
-            return _multiplexer ?? (_multiplexer = new RedisConnectionMultiplexer());
+            lock (Locker)
+            {
+                return _multiplexer ?? (_multiplexer = new RedisConnectionMultiplexer());
+            }
         }
     }
 }
