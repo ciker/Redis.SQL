@@ -29,5 +29,16 @@ namespace Redis.SQL.Client
         {
             return await _redisDatabase.StringSetAsync(key.ToLower(), JsonConvert.SerializeObject(value));
         }
+
+        public async Task<bool> StoreHashField<T>(string hashSet, string key, T value)
+        {
+            return await _redisDatabase.HashSetAsync(hashSet.ToLower(), key.ToLower(), JsonConvert.SerializeObject(value));
+        }
+        
+        public async Task<T> GetHashField<T>(string hashSet, string key)
+        {
+            var value = await _redisDatabase.HashGetAsync(hashSet.ToLower(), key.ToLower());
+            return string.IsNullOrEmpty(value) ? default(T) : JsonConvert.DeserializeObject<T>(value);
+        }
     }
 }
