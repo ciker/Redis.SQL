@@ -1,4 +1,5 @@
-﻿using StackExchange.Redis;
+﻿using System;
+using StackExchange.Redis;
 
 namespace Redis.SQL.Client
 {
@@ -14,8 +15,12 @@ namespace Redis.SQL.Client
 
         private RedisConnectionMultiplexer()
         {
-            var configurationManager = new ConfigurationManager();
-            Connection = ConnectionMultiplexer.Connect(configurationManager.GetConfigKey(RedisConnectionKey));
+            var redisConnectionKey = new ConfigurationManager().GetConfigKey(RedisConnectionKey);
+            if (string.IsNullOrEmpty(redisConnectionKey))
+            {
+                throw new Exception("RedisConnectionKey should be defined in the application settings JSON file");
+            }
+            Connection = ConnectionMultiplexer.Connect(redisConnectionKey);
         }
 
         internal static RedisConnectionMultiplexer GetMultiplexer()
