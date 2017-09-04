@@ -31,6 +31,11 @@ namespace Redis.SQL.Client
         {
             return await _redisDatabase.StringSetAsync(key.ToLower(), JsonConvert.SerializeObject(value));
         }
+
+        public async Task<long> IncrementValue(string key)
+        {
+            return await _redisDatabase.StringIncrementAsync(key.ToLower());
+        }
         #endregion
 
         #region HashSets
