@@ -1,10 +1,12 @@
-﻿using StackExchange.Redis;
+﻿using System.Threading.Tasks;
+using Newtonsoft.Json;
+using StackExchange.Redis;
 
 namespace Redis.SQL.Client
 {
     public class RedisStorageClient
     {
-        private IDatabase _redisDatabase;
+        private readonly IDatabase _redisDatabase;
 
         public RedisStorageClient()
         {
@@ -15,6 +17,17 @@ namespace Redis.SQL.Client
             var databaseIndex = string.IsNullOrEmpty(indexConfiguration) ? Constants.DefaultDatabaseIndex : int.Parse(indexConfiguration);
 
             _redisDatabase = RedisConnectionMultiplexer.GetMultiplexer().Connection.GetDatabase(databaseIndex);
+        }
+
+        public async Task<T> GetValue<T>(string key)
+        {
+            var value = await _redisDatabase.StringGetAsync(key.ToLower());
+            return string.IsNullOrEmpty(value) ? default(T) : JsonConvert.DeserializeObject<T>(value);
+        }
+
+        public async Task<bool> StoreValue<T>(string key, T value)
+        {
+            return await _redisDatabase.StringSetAsync(key.ToLower(), JsonConvert.SerializeObject(value));
         }
     }
 }
