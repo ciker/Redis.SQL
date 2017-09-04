@@ -6,5 +6,7 @@ namespace Redis.SQL.Client
         internal const string RedisConnectionKey = "RedisConnectionKey";
 
         internal const string RedisDatabaseIndex = "RedisDatabaseIndex";
+
+        internal const int DefaultDatabaseIndex = 0;
     }
 }
