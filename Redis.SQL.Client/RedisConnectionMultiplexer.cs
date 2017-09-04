@@ -5,8 +5,6 @@ namespace Redis.SQL.Client
 {
     internal sealed class RedisConnectionMultiplexer
     {
-        private const string RedisConnectionKey = "RedisConnectionKey";
-
         private static RedisConnectionMultiplexer _multiplexer;
 
         internal readonly ConnectionMultiplexer Connection;
@@ -15,7 +13,7 @@ namespace Redis.SQL.Client
 
         private RedisConnectionMultiplexer()
         {
-            var redisConnectionKey = new ConfigurationManager().GetConfigKey(RedisConnectionKey);
+            var redisConnectionKey = new ConfigurationManager().GetConfigKey(Constants.RedisConnectionKey);
             if (string.IsNullOrEmpty(redisConnectionKey))
             {
                 throw new Exception("RedisConnectionKey should be defined in the application settings JSON file");
