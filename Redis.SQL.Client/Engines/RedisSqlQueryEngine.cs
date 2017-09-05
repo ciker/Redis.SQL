@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Redis.SQL.Client.RedisClients;
 using Redis.SQL.Client.RedisClients.Interfaces;
@@ -21,32 +19,33 @@ namespace Redis.SQL.Client.Engines
             _zSetClient = new RedisZSetStorageClient();
         }
 
-        internal async Task<IEnumerable<string>> ExecuteCondition(string entityName, string property, string op, string value)
+        internal async Task<IEnumerable<string>> ExecuteCondition(string entityName, string property, Operator op, string value)
         {
-            if (op == "=")
+            if (op == Operator.Equals)
             {
                 return await GetKeysMatchingPropertyValue(entityName, property, value);
             }
 
-            if (op == ">=")
+            if (op == Operator.GreaterThanOrEqualTo)
             {
+                //GET RANGE FOR DATETIME AND TIMESPAN VALUES!!!
                 var range = await GetRange(entityName, property, value, string.Empty);
                 return await MapRangeToKeys(range, entityName, property);
             }
 
-            if (op == "<=")
+            if (op == Operator.LessThanOrEqualTo)
             {
                 var range = await GetRange(entityName, property, string.Empty, value);
                 return await MapRangeToKeys(range, entityName, property);
             }
 
-            if (op == ">")
+            if (op == Operator.GreaterThan)
             {
                 var range = (await GetRange(entityName, property, value, string.Empty)).Where(x => x != value);
                 return await MapRangeToKeys(range, entityName, property);
             }
 
-            if (op == "<")
+            if (op == Operator.LessThan)
             {
                 var range = (await GetRange(entityName, property, string.Empty, value)).Where(x => x != value);
                 return await MapRangeToKeys(range, entityName, property);

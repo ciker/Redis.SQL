@@ -74,14 +74,15 @@ namespace Redis.SQL.Client.Parsers
             {
                 var clause = clauses.First();
 
-                foreach (var operation in _operations)
+                for (var i = 0; i < _operations.Length; i++)
                 {
+                    var operation = _operations[i];
                     var property = clause.Split(new []{ operation }, StringSplitOptions.RemoveEmptyEntries).First();
 
                     if (!string.Equals(property, clause, StringComparison.OrdinalIgnoreCase) && property.All(x => x != '\''))
                     {
                         var value = clause.Substring(clause.IndexOf(operation, StringComparison.OrdinalIgnoreCase) + operation.Length).Trim('\'', ' ');
-                        var x = await new RedisSqlQueryEngine().ExecuteCondition("user", property, operation, value);
+                        var x = await new RedisSqlQueryEngine().ExecuteCondition("user", property, (Operator)(Math.Pow(2D, i)), value);
                     }
                 }
 
