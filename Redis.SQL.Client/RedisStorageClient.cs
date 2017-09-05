@@ -12,7 +12,9 @@ namespace Redis.SQL.Client
     {
         private readonly IDatabase _redisDatabase;
 
-        private static readonly SemaphoreSlim Mutex = new SemaphoreSlim(1, 1);
+        private static readonly IDictionary<string, SemaphoreSlim> HashMutexDictionary = new Dictionary<string, SemaphoreSlim>();
+
+        private static readonly object HashMutexDictionaryLock = new object();
 
         internal RedisStorageClient()
         {
@@ -55,7 +57,8 @@ namespace Redis.SQL.Client
 
         public async Task<bool> AppendStringToHashField(string hashSet, string key, string value)
         {
-            await Mutex.WaitAsync();
+            var mutex = GetMutex(hashSet, key);
+            await mutex.WaitAsync();
 
             try
             {
@@ -74,13 +77,14 @@ namespace Redis.SQL.Client
             }
             finally
             {
-                Mutex.Release();
+                mutex.Release();
             }
         }
 
         public async Task<bool> RemoveStringFromHashField(string hashSet, string key, string value)
         {
-            await Mutex.WaitAsync();
+            var mutex = GetMutex(hashSet, key);
+            await mutex.WaitAsync();
 
             try
             {
@@ -95,7 +99,7 @@ namespace Redis.SQL.Client
             }
             finally
             {
-                Mutex.Release();
+                mutex.Release();
             }
         }
         #endregion
@@ -150,6 +154,18 @@ namespace Redis.SQL.Client
             return await _redisDatabase.SortedSetAddAsync(key.ToLower(), GetRedisValue(value), score);
         }
         #endregion
+
+        private static SemaphoreSlim GetMutex(string hashSet, string key)
+        {
+            lock (HashMutexDictionaryLock)
+            {
+                var lookupKey = hashSet.ToLower() + ":" + key.ToLower();
+                if (HashMutexDictionary.TryGetValue(lookupKey, out var mutex)) return mutex;
+                mutex = new SemaphoreSlim(1, 1);
+                HashMutexDictionary.Add(lookupKey, mutex);
+                return mutex;
+            }
+        }
 
         private static string GetRedisValue<T>(T value) => typeof(T) == typeof(string) ? value.ToString() : JsonConvert.SerializeObject(value);
     }
