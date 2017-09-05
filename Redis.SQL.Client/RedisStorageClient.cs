@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Redis.SQL.Client.Interfaces;
@@ -10,6 +11,8 @@ namespace Redis.SQL.Client
     internal class RedisStorageClient : IRedisStringStorageClient, IRedisHashStorageClient, IRedisListStorageClient, IRedisSetStorageClient, IRedisZSetStorageClient
     {
         private readonly IDatabase _redisDatabase;
+
+        private static readonly SemaphoreSlim Mutex = new SemaphoreSlim(1, 1);
 
         internal RedisStorageClient()
         {
@@ -45,9 +48,55 @@ namespace Redis.SQL.Client
             return await _redisDatabase.HashGetAsync(hashSet.ToLower(), key.ToLower());
         }
 
-        public async Task<bool> StoreHashField<T>(string hashSet, string key, T value)
+        public async Task<bool> SetHashField<T>(string hashSet, string key, T value)
         {
             return await _redisDatabase.HashSetAsync(hashSet.ToLower(), key.ToLower(), GetRedisValue(value));
+        }
+
+        public async Task<bool> AppendStringToHashField(string hashSet, string key, string value)
+        {
+            await Mutex.WaitAsync();
+
+            try
+            {
+                var field = await GetHashField(hashSet, key);
+
+                if (string.IsNullOrEmpty(field))
+                {
+                    field = value;
+                }
+                else if (field.Split(',').All(x => x != value))
+                {
+                    field += "," + value;
+                }
+
+                return await SetHashField(hashSet.ToLower(), key.ToLower(), GetRedisValue(field));
+            }
+            finally
+            {
+                Mutex.Release();
+            }
+        }
+
+        public async Task<bool> RemoveStringFromHashField(string hashSet, string key, string value)
+        {
+            await Mutex.WaitAsync();
+
+            try
+            {
+                var field = await GetHashField(hashSet, key);
+
+                if (!string.IsNullOrEmpty(field))
+                {
+                    field = string.Join(",", field.Split(',').Where(x => x != value));
+                }
+
+                return await SetHashField(hashSet.ToLower(), key.ToLower(), GetRedisValue(field));
+            }
+            finally
+            {
+                Mutex.Release();
+            }
         }
         #endregion
 

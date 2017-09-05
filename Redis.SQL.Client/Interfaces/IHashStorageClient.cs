@@ -5,6 +5,8 @@ namespace Redis.SQL.Client.Interfaces
     internal interface IRedisHashStorageClient
     {
         Task<string> GetHashField(string hashSet, string key);
-        Task<bool> StoreHashField<T>(string hashSet, string key, T value);
+        Task<bool> SetHashField<T>(string hashSet, string key, T value);
+        Task<bool> AppendStringToHashField(string hashSet, string key, string value);
+        Task<bool> RemoveStringFromHashField(string hashSet, string key, string value);
     }
 }

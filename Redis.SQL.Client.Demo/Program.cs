@@ -26,8 +26,18 @@ namespace Redis.SQL.Client.Demo
                 Vaccinated = true
             };
 
+            var entity3 = new TestType
+            {
+                Age = 30,
+                Name = "Samir",
+                Created = DateTime.UtcNow.AddHours(2),
+                Time = new TimeSpan(13, 09, 02),
+                Vaccinated = true
+            };
+
             client.CreateEntity(entity);
             client.CreateEntity(entity2);
+            client.CreateEntity(entity3);
             Console.ReadLine();
         }
 

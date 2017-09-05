@@ -29,7 +29,7 @@ namespace Redis.SQL.Client
             foreach (var property in properties)
             {
                 var propertyValue = GetPropertyRedisValue(property, entity);
-                await _hashClient.StoreHashField(Helpers.GetEntityIndexKey(entityName, property.Name), propertyValue, identifier);
+                await _hashClient.AppendStringToHashField(Helpers.GetEntityIndexKey(entityName, property.Name), propertyValue, identifier);
                 await _zSetClient.AddToSortedSet(Helpers.GetPropertyCollectionKey(entityName, property.Name), propertyValue);
             }
 
