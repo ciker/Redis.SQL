@@ -12,6 +12,7 @@ namespace Redis.SQL.Client.Demo
 
             var clauses = new List<string>();
             var operators = new List<string>();
+            //parser.ParseCondition(@"((x==1)OR y == 2)", clauses, operators);
             parser.ParseCondition(@"((((((x == 'a or)())b' Or x > 2)) aNd ((orx < 5)))OR    (y==10))))", clauses, operators);
             Console.ReadLine();
         }

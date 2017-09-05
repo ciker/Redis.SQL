@@ -27,16 +27,16 @@ namespace Redis.SQL.Client.Parsers
 
                 if (singleQuote) goto SetClause; //Dont parse special keywords until the single quote is closed
 
-                if (openings == closings && (i == 0 || condition[i - 1] == ' '|| condition[i - 1] == ')') && condition.Length >= 3)
+                if (openings == closings && (i == 0 || condition[i - 1] == ' '))
                 {
-                    if (char.ToUpperInvariant(condition[i]) == char.ToUpperInvariant('o') && char.ToUpperInvariant(condition[i + 1]) == char.ToUpperInvariant('r') && condition[i + 2] == ' ')
+                    if (condition.Substring(i).ToLower().StartsWith("or "))
                     {
                         if (!string.IsNullOrWhiteSpace(clause)) result.Add(clause.Trim(_trimFromClauses));
                         operators.Add("or");
                         return ParseCondition(condition.Substring(i + 2), result, operators);
                     }
                     
-                    if (condition.Length >= 4 && char.ToUpperInvariant(condition[i]) == char.ToUpperInvariant('a') && char.ToUpperInvariant(condition[i + 1]) == char.ToUpperInvariant('n') && char.ToUpperInvariant(condition[i + 2]) == char.ToUpperInvariant('d') && condition[i + 3] == ' ')
+                    if (condition.Substring(i).ToLower().StartsWith("and "))
                     {
                         if (!string.IsNullOrWhiteSpace(clause)) result.Add(clause.Trim(_trimFromClauses));
                         operators.Add("and");
@@ -50,7 +50,7 @@ namespace Redis.SQL.Client.Parsers
 
                 if (singleQuote) continue;
 
-                if (openings > 0 && openings == closings)
+                if (openings > 0 && openings == closings) //Extract the inner clause from the brackets and parse the rest of the string
                 {
                     return ParseCondition(clause.Substring(1, innerCounter - 2), result, operators) && ParseCondition(condition.Substring(i + 1), result, operators);
                 }
