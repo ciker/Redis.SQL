@@ -30,7 +30,7 @@ namespace Redis.SQL.Client.RedisClients
         {
             return await _redisDatabase.HashGetAsync(hashSet.ToLower(), key.ToLower());
         }
-
+        
         public async Task<bool> SetHashField<T>(string hashSet, string key, T value)
         {
             return await _redisDatabase.HashSetAsync(hashSet.ToLower(), key.ToLower(), Helpers.SerializeRedisValue(value));

@@ -1,12 +1,17 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Redis.SQL.Client.Engines;
 
 namespace Redis.SQL.Client.Parsers
 {
     public class ConditionalParser
     {
         private readonly char[] _trimFromClauses = {' ', '(', ')'};
+        private readonly string[] _operations = {">=", "<=", ">", "<", "!=", "=", "in["};
 
-        public bool ParseCondition(string condition, ICollection<string> result, ICollection<string> operators)
+        private bool Parse(string condition, ICollection<string> result, ICollection<string> operators)
         {
             if (string.IsNullOrWhiteSpace(condition)) return true;
 
@@ -33,14 +38,14 @@ namespace Redis.SQL.Client.Parsers
                     {
                         if (!string.IsNullOrWhiteSpace(clause)) result.Add(clause.Trim(_trimFromClauses));
                         operators.Add("or");
-                        return ParseCondition(condition.Substring(i + 2), result, operators);
+                        return Parse(condition.Substring(i + 2), result, operators);
                     }
                     
                     if (condition.Substring(i).ToLower().StartsWith("and "))
                     {
                         if (!string.IsNullOrWhiteSpace(clause)) result.Add(clause.Trim(_trimFromClauses));
                         operators.Add("and");
-                        return ParseCondition(condition.Substring(i + 3), result, operators);
+                        return Parse(condition.Substring(i + 3), result, operators);
                     }
                 }
 
@@ -52,12 +57,39 @@ namespace Redis.SQL.Client.Parsers
 
                 if (openings > 0 && openings == closings) //Extract the inner clause from the brackets and parse the rest of the string
                 {
-                    return ParseCondition(clause.Substring(1, innerCounter - 2), result, operators) && ParseCondition(condition.Substring(i + 1), result, operators);
+                    return Parse(clause.Substring(1, innerCounter - 2), result, operators) && Parse(condition.Substring(i + 1), result, operators);
                 }
             }
 
             result.Add(clause.Trim(_trimFromClauses));
             return true;
+        }
+
+        public async Task ParseCondition(string condition)
+        {
+            ICollection<string> clauses = new List<string>(), operators = new List<string>();
+            Parse(condition, clauses, operators);
+
+            while (clauses.Any())
+            {
+                var clause = clauses.First();
+
+                foreach (var operation in _operations)
+                {
+                    var property = clause.Split(new []{ operation }, StringSplitOptions.RemoveEmptyEntries).First();
+
+                    if (!string.Equals(property, clause, StringComparison.OrdinalIgnoreCase) && property.All(x => x != '\''))
+                    {
+                        var value = clause.Substring(clause.IndexOf(operation, StringComparison.OrdinalIgnoreCase) + operation.Length).Trim('\'', ' ');
+                        var x = await new RedisSqlQueryEngine().ExecuteCondition("user", property, operation, value);
+                    }
+                }
+
+
+                
+
+
+            }
         }
     }
 }

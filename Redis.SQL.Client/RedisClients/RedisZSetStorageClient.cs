@@ -33,6 +33,8 @@ namespace Redis.SQL.Client.RedisClients
 
         public async Task<IEnumerable<string>> GetSortedSetElementsByValue(string key, string minValue, string maxValue)
         {
+            if (string.IsNullOrEmpty(maxValue)) maxValue = default(RedisValue);
+            if (string.IsNullOrEmpty(minValue)) minValue = default(RedisValue);
             return (await _redisDatabase.SortedSetRangeByValueAsync(key.ToLower(), minValue, maxValue)).Select(x => x.ToString());
         }
 

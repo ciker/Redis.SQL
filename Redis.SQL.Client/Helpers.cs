@@ -25,11 +25,11 @@ namespace Redis.SQL.Client
 
         internal static string GetBooleanRedisValue(bool value) => (value ? 0 : 1).ToString();
 
-        internal static string GetEntityStoreKey(string entityName, string identifier) => entityName.ToLower() + Constants.EntityDataDirectoryName + identifier.ToLower();
+        internal static string GetEntityStoreKey(string entityName, string identifier) => (entityName.ToLower() + Constants.EntityDataDirectoryName + identifier.ToLower()).Trim();
 
-        internal static string GetEntityIndexKey(string entityName, string property) => entityName.ToLower() + Constants.EntityIndexesDirectoryName + property.ToLower();
+        internal static string GetEntityIndexKey(string entityName, string property) => (entityName.ToLower() + Constants.EntityIndexesDirectoryName + property.ToLower()).Trim();
 
-        internal static string GetPropertyCollectionKey(string entityName, string property) => entityName.ToLower() + Constants.EntityPropertyCollectionDirectoryName + property.ToLower();
+        internal static string GetPropertyCollectionKey(string entityName, string property) => (entityName.ToLower() + Constants.EntityPropertyCollectionDirectoryName + property.ToLower()).Trim();
 
         internal static string GetEntityCountKey(string entityName) => entityName.ToLower() + Constants.EntityCountSuffix;
 
