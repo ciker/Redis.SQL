@@ -8,15 +8,9 @@ namespace Redis.SQL.Client
 {
     internal class Helpers
     {
-        internal static string GetTypeName<T>()
-        {
-            return typeof(T).Name.ToLower();
-        }
+        internal static string GetTypeName<T>() => typeof(T).Name.ToLower();
 
-        internal static string GenerateRandomString()
-        {
-            return Guid.NewGuid().ToString().Replace("-", string.Empty);
-        }
+        internal static string GenerateRandomString() => Guid.NewGuid().ToString().Replace("-", string.Empty);
 
         internal static IEnumerable<PropertyInfo> GetTypeProperties<T>() => typeof(T).GetProperties().ToList();
 
