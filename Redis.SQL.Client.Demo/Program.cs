@@ -1,5 +1,6 @@
 ﻿using System;
-using Redis.SQL.Client.Engines;
+using System.Collections.Generic;
+using Redis.SQL.Client.Parsers;
 
 namespace Redis.SQL.Client.Demo
 {
@@ -7,38 +8,11 @@ namespace Redis.SQL.Client.Demo
     {
         public static void Main(string[] args)
         {
-            var client = new RedisSqlCreationEngine();
+            var parser = new ConditionalParser();
 
-            var entity = new TestType
-            {
-                Age = 30,
-                Name = "Ahmed",
-                Created = DateTime.UtcNow,
-                Time = new TimeSpan(10, 30, 2),
-                Vaccinated = false
-            };
-
-            var entity2 = new TestType
-            {
-                Age = 20,
-                Name = "Ramy",
-                Created = DateTime.UtcNow.AddHours(1),
-                Time = new TimeSpan(03, 10, 32),
-                Vaccinated = true
-            };
-
-            var entity3 = new TestType
-            {
-                Age = 30,
-                Name = "Samir",
-                Created = DateTime.UtcNow.AddHours(2),
-                Time = new TimeSpan(13, 09, 02),
-                Vaccinated = true
-            };
-
-            client.CreateEntity(entity);
-            client.CreateEntity(entity2);
-            client.CreateEntity(entity3);
+            var clauses = new List<string>();
+            var operators = new List<string>();
+            parser.ParseCondition(@"((((((x == 'a or)())b' Or x > 2)) aNd ((orx < 5)))OR    (y==10))))", clauses, operators);
             Console.ReadLine();
         }
 
