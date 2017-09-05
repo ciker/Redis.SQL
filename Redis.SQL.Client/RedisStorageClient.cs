@@ -59,11 +59,15 @@ namespace Redis.SQL.Client
             return await _redisDatabase.ListGetByIndexAsync(key.ToLower(), index);
         }
 
-        public async Task<long> AddToList<T>(string key, T value)
+        public async Task<long> AddToListTail<T>(string key, T value)
         {
             return await _redisDatabase.ListRightPushAsync(key.ToLower(), JsonConvert.SerializeObject(value));
         }
 
+        public async Task<long> AddToListHead<T>(string key, T value)
+        {
+            return await _redisDatabase.ListLeftPushAsync(key.ToLower(), JsonConvert.SerializeObject(value));
+        }
         #endregion
 
         #region Sets
@@ -82,6 +86,11 @@ namespace Redis.SQL.Client
         public async Task<IEnumerable<string>> GetSortedSetElementsByScore(string key, double minScore, double maxScore)
         {
             return (await _redisDatabase.SortedSetRangeByScoreAsync(key.ToLower(), minScore, maxScore)).Select(x => x.ToString());
+        }
+
+        public async Task<IEnumerable<string>> GetSortedSetElementsByIndex(string key, long startIndex, long endIndex)
+        {
+            return (await _redisDatabase.SortedSetRangeByRankAsync(key.ToLower(), startIndex, endIndex)).Select(x => x.ToString());
         }
 
         public async Task<bool> AddToSortedSet<T>(string key, T value, double score)

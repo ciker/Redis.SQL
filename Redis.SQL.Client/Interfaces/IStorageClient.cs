@@ -11,10 +11,12 @@ namespace Redis.SQL.Client.Interfaces
         Task<T> GetHashField<T>(string hashSet, string key);
         Task<bool> StoreHashField<T>(string hashSet, string key, T value);
         Task<string> GetListElementByIndex(string key, int index);
-        Task<long> AddToList<T>(string key, T value);
+        Task<long> AddToListTail<T>(string key, T value);
+        Task<long> AddToListHead<T>(string key, T value);
         Task<bool> SetContains<T>(string key, T value);
         Task<bool> AddToSet<T>(string key, T value);
         Task<IEnumerable<string>> GetSortedSetElementsByScore(string key, double minScore, double maxScore);
+        Task<IEnumerable<string>> GetSortedSetElementsByIndex(string key, long startIndex, long endIndex);
         Task<bool> AddToSortedSet<T>(string key, T value, double score);
     }
 }
