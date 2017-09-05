@@ -11,6 +11,8 @@ namespace Redis.SQL.Client
 
         internal const string EntityKeyFieldName = "entitykey";
 
+        internal const string AllEntityNamesSetKeyName = "entities";
+
         internal const string EntityIndexesDirectoryName = ":indexes:";
 
         internal const string EntityPropertyCollectionDirectoryName = ":properties:";
