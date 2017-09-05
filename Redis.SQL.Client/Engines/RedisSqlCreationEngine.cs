@@ -4,15 +4,15 @@ using System.Threading.Tasks;
 using Redis.SQL.Client.RedisClients;
 using Redis.SQL.Client.RedisClients.Interfaces;
 
-namespace Redis.SQL.Client
+namespace Redis.SQL.Client.Engines
 {
-    public class RedisSqlEngine
+    public class RedisSqlCreationEngine
     {
         private readonly IRedisHashStorageClient _hashClient;
         private readonly IRedisStringStorageClient _stringClient;
         private readonly IRedisZSetStorageClient _zSetClient;
 
-        public RedisSqlEngine()
+        public RedisSqlCreationEngine()
         {
             _hashClient = new RedisHashStorageClient();
             _stringClient = new RedisStringStorageClient();

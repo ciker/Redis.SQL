@@ -1,4 +1,5 @@
 ﻿using System;
+using Redis.SQL.Client.Engines;
 
 namespace Redis.SQL.Client.Demo
 {
@@ -6,7 +7,7 @@ namespace Redis.SQL.Client.Demo
     {
         public static void Main(string[] args)
         {
-            var client = new RedisSqlEngine();
+            var client = new RedisSqlCreationEngine();
 
             var entity = new TestType
             {
