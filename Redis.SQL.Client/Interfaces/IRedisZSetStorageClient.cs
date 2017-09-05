@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Redis.SQL.Client.Interfaces
 {
-    internal interface IRedisSortedSetStorageClient
+    internal interface IRedisZSetStorageClient
     {
         Task<IEnumerable<string>> GetSortedSetElementsByScore(string key, double minScore, double maxScore);
         Task<IEnumerable<string>> GetSortedSetElementsByIndex(string key, long startIndex, long endIndex);
