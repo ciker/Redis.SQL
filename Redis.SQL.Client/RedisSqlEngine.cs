@@ -21,13 +21,14 @@ namespace Redis.SQL.Client
             var properties = Helpers.GetTypeProperties<TEntity>();
 
             await _stringClient.StoreValue(Helpers.GetEntityStoreKey(entityName, identifier), entity);
-            await _stringClient.IncrementValue(Helpers.GetEntityCountKey(entityName));
 
             foreach (var property in properties)
             {
                 var fieldValue = property.GetValue(entity).ToString();
                 await _hashClient.StoreHashField(Helpers.GetEntityIndexKey(entityName, property.Name), fieldValue, identifier);
             }
+
+            await _stringClient.IncrementValue(Helpers.GetEntityCountKey(entityName));
         }
     }
 }

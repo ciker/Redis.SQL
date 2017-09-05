@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using Newtonsoft.Json;
 
 namespace Redis.SQL.Client
 {
@@ -23,17 +23,17 @@ namespace Redis.SQL.Client
         internal static string GetDateTimeSortedSetValue(DateTime date)
         {
             var unixEpoch = new DateTime(1970, 1, 1);
-            return date.Subtract(unixEpoch).TotalMilliseconds.ToString();
+            return date.Subtract(unixEpoch).TotalMilliseconds.ToString(CultureInfo.InvariantCulture);
         }
 
-        internal static string GetTimeSpanSortedSetValue(TimeSpan time) => time.TotalMilliseconds.ToString();
+        internal static string GetTimeSpanSortedSetValue(TimeSpan time) => time.TotalMilliseconds.ToString(CultureInfo.InvariantCulture);
 
         internal static string GetBooleanSortedSetValue(bool value) => (value ? 0 : 1).ToString();
 
-        internal static string GetEntityStoreKey(string entityName, string identifier) => entityName.ToLower() + "_" + identifier.ToLower();
+        internal static string GetEntityStoreKey(string entityName, string identifier) => entityName.ToLower() + Constants.EntityDataDirectoryName + identifier.ToLower();
 
-        internal static string GetEntityIndexKey(string entityName, string field) => entityName.ToLower() + "_" + field.ToLower();
+        internal static string GetEntityIndexKey(string entityName, string field) => entityName.ToLower() + Constants.EntityIndexesDirectoryName + field.ToLower();
 
-        internal static string GetEntityCountKey(string entityName) => entityName.ToLower() + "_" + Constants.EntityCountSuffix;
+        internal static string GetEntityCountKey(string entityName) => entityName.ToLower() + Constants.EntityCountSuffix;
     }
 }
