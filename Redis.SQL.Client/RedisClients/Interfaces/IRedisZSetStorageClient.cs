@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Redis.SQL.Client.Interfaces
+namespace Redis.SQL.Client.RedisClients.Interfaces
 {
     internal interface IRedisZSetStorageClient
     {

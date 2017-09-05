@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using Newtonsoft.Json;
 
 namespace Redis.SQL.Client
 {
@@ -31,5 +32,7 @@ namespace Redis.SQL.Client
         internal static string GetPropertyCollectionKey(string entityName, string property) => entityName.ToLower() + Constants.EntityPropertyCollectionDirectoryName + property.ToLower();
 
         internal static string GetEntityCountKey(string entityName) => entityName.ToLower() + Constants.EntityCountSuffix;
+
+        internal static string SerializeRedisValue<T>(T value) => typeof(T) == typeof(string) ? value.ToString() : JsonConvert.SerializeObject(value);
     }
 }

@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Reflection;
 using System.Threading.Tasks;
-using Redis.SQL.Client.Interfaces;
+using Redis.SQL.Client.RedisClients;
+using Redis.SQL.Client.RedisClients.Interfaces;
 
 namespace Redis.SQL.Client
 {
@@ -13,9 +14,9 @@ namespace Redis.SQL.Client
 
         public RedisSqlEngine()
         {
-            _hashClient = new RedisStorageClient();
-            _stringClient = new RedisStorageClient();
-            _zSetClient = new RedisStorageClient();
+            _hashClient = new RedisHashStorageClient();
+            _stringClient = new RedisStringStorageClient();
+            _zSetClient = new RedisZSetStorageClient();
         }
 
         public async Task CreateEntity<TEntity>(TEntity entity) where TEntity : class
