@@ -1,4 +1,8 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 namespace Redis.SQL.Client
 {
@@ -13,6 +17,8 @@ namespace Redis.SQL.Client
         {
             return Guid.NewGuid().ToString().Replace("-", string.Empty);
         }
+
+        internal static IEnumerable<PropertyInfo> GetTypeProperties<T>() => typeof(T).GetProperties().ToList();
         
         internal static string GetEntityStoreKey(string entityName, string identifier) => entityName.ToLower() + "_" + identifier.ToLower();
 

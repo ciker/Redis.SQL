@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Redis.SQL.Client.Interfaces;
 using StackExchange.Redis;
@@ -51,6 +53,19 @@ namespace Redis.SQL.Client
         }
         #endregion
 
+        #region Lists
+        public async Task<string> GetListElementByIndex(string key, int index)
+        {
+            return await _redisDatabase.ListGetByIndexAsync(key.ToLower(), index);
+        }
+
+        public async Task<long> AddToList<T>(string key, T value)
+        {
+            return await _redisDatabase.ListRightPushAsync(key.ToLower(), JsonConvert.SerializeObject(value));
+        }
+
+        #endregion
+
         #region Sets
         public async Task<bool> SetContains<T>(string key, T value)
         {
@@ -60,6 +75,18 @@ namespace Redis.SQL.Client
         public async Task<bool> AddToSet<T>(string key, T value)
         {
             return await _redisDatabase.SetAddAsync(key.ToLower(), JsonConvert.SerializeObject(value));
+        }
+        #endregion
+
+        #region Sorted Sets
+        public async Task<IEnumerable<string>> GetSortedSetElementsByScore(string key, double minScore, double maxScore)
+        {
+            return (await _redisDatabase.SortedSetRangeByScoreAsync(key.ToLower(), minScore, maxScore)).Select(x => x.ToString());
+        }
+
+        public async Task<bool> AddToSortedSet<T>(string key, T value, double score)
+        {
+            return await _redisDatabase.SortedSetAddAsync(key.ToLower(), JsonConvert.SerializeObject(value), score);
         }
         #endregion
     }
