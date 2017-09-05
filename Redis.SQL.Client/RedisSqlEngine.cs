@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Redis.SQL.Client.Interfaces;
 
 namespace Redis.SQL.Client

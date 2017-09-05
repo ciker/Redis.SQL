@@ -23,15 +23,14 @@ namespace Redis.SQL.Client
         }
 
         #region Strings
-        public async Task<T> GetValue<T>(string key)
+        public async Task<string> GetValue(string key)
         {
-            var value = await _redisDatabase.StringGetAsync(key.ToLower());
-            return string.IsNullOrEmpty(value) ? default(T) : JsonConvert.DeserializeObject<T>(value);
+            return await _redisDatabase.StringGetAsync(key.ToLower());
         }
 
         public async Task<bool> StoreValue<T>(string key, T value)
         {
-            return await _redisDatabase.StringSetAsync(key.ToLower(), JsonConvert.SerializeObject(value));
+            return await _redisDatabase.StringSetAsync(key.ToLower(), GetRedisValue(value));
         }
 
         public async Task<long> IncrementValue(string key)
@@ -41,15 +40,14 @@ namespace Redis.SQL.Client
         #endregion
 
         #region HashSets
-        public async Task<T> GetHashField<T>(string hashSet, string key)
+        public async Task<string> GetHashField(string hashSet, string key)
         {
-            var value = await _redisDatabase.HashGetAsync(hashSet.ToLower(), key.ToLower());
-            return string.IsNullOrEmpty(value) ? default(T) : JsonConvert.DeserializeObject<T>(value);
+            return await _redisDatabase.HashGetAsync(hashSet.ToLower(), key.ToLower());
         }
 
         public async Task<bool> StoreHashField<T>(string hashSet, string key, T value)
         {
-            return await _redisDatabase.HashSetAsync(hashSet.ToLower(), key.ToLower(), JsonConvert.SerializeObject(value));
+            return await _redisDatabase.HashSetAsync(hashSet.ToLower(), key.ToLower(), GetRedisValue(value));
         }
         #endregion
 
@@ -61,24 +59,24 @@ namespace Redis.SQL.Client
 
         public async Task<long> AddToListTail<T>(string key, T value)
         {
-            return await _redisDatabase.ListRightPushAsync(key.ToLower(), JsonConvert.SerializeObject(value));
+            return await _redisDatabase.ListRightPushAsync(key.ToLower(), GetRedisValue(value));
         }
 
         public async Task<long> AddToListHead<T>(string key, T value)
         {
-            return await _redisDatabase.ListLeftPushAsync(key.ToLower(), JsonConvert.SerializeObject(value));
+            return await _redisDatabase.ListLeftPushAsync(key.ToLower(), GetRedisValue(value));
         }
         #endregion
 
         #region Sets
         public async Task<bool> SetContains<T>(string key, T value)
         {
-            return await _redisDatabase.SetContainsAsync(key.ToLower(), JsonConvert.SerializeObject(value));
+            return await _redisDatabase.SetContainsAsync(key.ToLower(), GetRedisValue(value));
         }
 
         public async Task<bool> AddToSet<T>(string key, T value)
         {
-            return await _redisDatabase.SetAddAsync(key.ToLower(), JsonConvert.SerializeObject(value));
+            return await _redisDatabase.SetAddAsync(key.ToLower(), GetRedisValue(value));
         }
         #endregion
 
@@ -93,10 +91,17 @@ namespace Redis.SQL.Client
             return (await _redisDatabase.SortedSetRangeByRankAsync(key.ToLower(), startIndex, endIndex)).Select(x => x.ToString());
         }
 
-        public async Task<bool> AddToSortedSet<T>(string key, T value, double score)
+        public async Task<IEnumerable<string>> GetSortedSetElementsByValue(string key, string minValue, string maxValue)
         {
-            return await _redisDatabase.SortedSetAddAsync(key.ToLower(), JsonConvert.SerializeObject(value), score);
+            return (await _redisDatabase.SortedSetRangeByValueAsync(key.ToLower(), minValue, maxValue)).Select(x => x.ToString());
+        }
+
+        public async Task<bool> AddToSortedSet<T>(string key, T value, double score = 0D)
+        {
+            return await _redisDatabase.SortedSetAddAsync(key.ToLower(), GetRedisValue(value), score);
         }
         #endregion
+
+        private static string GetRedisValue<T>(T value) => typeof(T) == typeof(string) ? value.ToString() : JsonConvert.SerializeObject(value);
     }
 }
