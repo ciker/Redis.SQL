@@ -7,7 +7,9 @@ namespace Redis.SQL.Client
 
         internal const string RedisDatabaseIndex = "RedisDatabaseIndex";
 
-        internal const string EntityCountSuffix = ":meta:entity_count";
+        internal const string EntityCountKey = ":meta:entity_count";
+
+        internal const string EntityPropertyTypesKey = ":meta:property_types";
 
         internal const string EntityKeyFieldName = "entitykey";
 

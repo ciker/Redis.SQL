@@ -31,7 +31,9 @@ namespace Redis.SQL.Client
 
         internal static string GetPropertyCollectionKey(string entityName, string property) => (entityName.ToLower() + Constants.EntityPropertyCollectionDirectoryName + property.ToLower()).Trim();
 
-        internal static string GetEntityCountKey(string entityName) => entityName.ToLower() + Constants.EntityCountSuffix;
+        internal static string GetEntityCountKey(string entityName) => entityName.ToLower() + Constants.EntityCountKey;
+
+        internal static string GetEntityPropertyTypesKey(string entityName) => entityName.ToLower() + Constants.EntityPropertyTypesKey;
 
         internal static string SerializeRedisValue<T>(T value) => typeof(T) == typeof(string) ? value.ToString() : JsonConvert.SerializeObject(value);
     }

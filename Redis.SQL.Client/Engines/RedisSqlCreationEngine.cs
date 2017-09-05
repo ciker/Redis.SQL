@@ -31,7 +31,8 @@ namespace Redis.SQL.Client.Engines
 
             foreach (var property in properties)
             {
-                var propertyValue = GetPropertyRedisValue(property, entity);
+                var propertyValue = EncodeProperty(property, entity);
+                await _hashClient.SetHashField(Helpers.GetEntityPropertyTypesKey(entityName), property.Name, property.PropertyType.Name);
                 await _hashClient.AppendStringToHashField(Helpers.GetEntityIndexKey(entityName, property.Name), propertyValue, identifier);
                 await _zSetClient.AddToSortedSet(Helpers.GetPropertyCollectionKey(entityName, property.Name), propertyValue);
             }
@@ -40,7 +41,7 @@ namespace Redis.SQL.Client.Engines
             await _stringClient.IncrementValue(Helpers.GetEntityCountKey(entityName));
         }
 
-        private static string GetPropertyRedisValue<TEntity>(PropertyInfo property, TEntity entity)
+        private static string EncodeProperty<TEntity>(PropertyInfo property, TEntity entity)
         {
             var value = property.GetValue(entity);
 
