@@ -1,18 +1,17 @@
-﻿using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
+﻿using System.Threading.Tasks;
 using Redis.SQL.Client.Interfaces;
 
 namespace Redis.SQL.Client
 {
     public class RedisSqlEngine
     {
-        private readonly IStorageClient _client;
+        private readonly IRedisHashStorageClient _hashClient;
+        private readonly IRedisStringStorageClient _stringClient;
 
         public RedisSqlEngine()
         {
-            _client = new RedisStorageClient();
+            _hashClient = new RedisStorageClient();
+            _stringClient = new RedisStorageClient();
         }
 
         public async Task CreateEntity<TEntity>(TEntity entity) where TEntity : class
@@ -21,13 +20,13 @@ namespace Redis.SQL.Client
             var identifier = Helpers.GenerateRandomString();
             var properties = Helpers.GetTypeProperties<TEntity>();
 
-            await _client.StoreValue(Helpers.GetEntityStoreKey(entityName, identifier), entity);
-            await _client.IncrementValue(Helpers.GetEntityCountKey(entityName));
+            await _stringClient.StoreValue(Helpers.GetEntityStoreKey(entityName, identifier), entity);
+            await _stringClient.IncrementValue(Helpers.GetEntityCountKey(entityName));
 
             foreach (var property in properties)
             {
                 var fieldValue = property.GetValue(entity).ToString();
-                await _client.StoreHashField(Helpers.GetEntityIndexKey(entityName, property.Name), fieldValue, identifier);
+                await _hashClient.StoreHashField(Helpers.GetEntityIndexKey(entityName, property.Name), fieldValue, identifier);
             }
         }
     }

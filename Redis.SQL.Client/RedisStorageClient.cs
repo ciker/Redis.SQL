@@ -7,7 +7,7 @@ using StackExchange.Redis;
 
 namespace Redis.SQL.Client
 {
-    internal class RedisStorageClient : IStorageClient
+    internal class RedisStorageClient : IRedisStringStorageClient, IRedisHashStorageClient, IRedisListStorageClient, IRedisSetStorageClient, IRedisSortedSetStorageClient
     {
         private readonly IDatabase _redisDatabase;
 
