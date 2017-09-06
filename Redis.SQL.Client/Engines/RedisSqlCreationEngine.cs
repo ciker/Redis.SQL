@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using System.Threading.Tasks;
+using Redis.SQL.Client.Enums;
 using Redis.SQL.Client.RedisClients;
 using Redis.SQL.Client.RedisClients.Interfaces;
 
@@ -45,17 +46,17 @@ namespace Redis.SQL.Client.Engines
         {
             var value = property.GetValue(entity);
 
-            if (property.PropertyType == typeof(DateTime))
+            if (property.Name == TypeNames.DateTime.ToString())
             {
                 return Helpers.GetDateTimeRedisValue((DateTime)value);
             }
 
-            if (property.PropertyType == typeof(TimeSpan))
+            if (property.Name == TypeNames.TimeSpan.ToString())
             {
                 return Helpers.GetTimeSpanRedisValue((TimeSpan)value);
             }
 
-            if (property.PropertyType == typeof(bool))
+            if (property.Name == TypeNames.Boolean.ToString())
             {
                 return Helpers.GetBooleanRedisValue((bool)value);
             }

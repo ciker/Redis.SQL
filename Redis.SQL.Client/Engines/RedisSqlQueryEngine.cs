@@ -66,17 +66,17 @@ namespace Redis.SQL.Client.Engines
         private async Task<string> ResolvePropertyValue(string entityName, string property, string value)
         {
             var propertyType = await _hashClient.GetHashField(Helpers.GetEntityPropertyTypesKey(entityName), property);
-            if (propertyType == typeof(DateTime).Name)
+            if (propertyType == TypeNames.DateTime.ToString())
             {
                 return Helpers.GetDateTimeRedisValue(DateTime.Parse(value));
             }
 
-            if (propertyType == typeof(TimeSpan).Name)
+            if (propertyType == TypeNames.TimeSpan.ToString())
             {
                 return Helpers.GetTimeSpanRedisValue(TimeSpan.Parse(value));
             }
 
-            if (propertyType == typeof(bool).Name)
+            if (propertyType == TypeNames.Boolean.ToString())
             {
                 if (string.Equals(value, RedisBoolean.True.ToString(), StringComparison.OrdinalIgnoreCase)) return ((long)RedisBoolean.True).ToString();
                 if (string.Equals(value, RedisBoolean.False.ToString(), StringComparison.OrdinalIgnoreCase)) return ((long)RedisBoolean.False).ToString();

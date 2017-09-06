@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Redis.SQL.Client.Engines;
@@ -160,9 +161,12 @@ namespace Redis.SQL.Client.Parsers
         {
             IList<string> clauses = new List<string>();
 
+            var watch = new Stopwatch();
+
+
             Parse(RemoveWhiteSpacesFromCondition(condition), clauses);
             clauses = FilterDuplicateClauses(OrderClauses(clauses));
-
+            
             while (clauses.Any())
             {
                 var clause = clauses.First();
