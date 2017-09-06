@@ -9,14 +9,22 @@ namespace Redis.SQL.Client.Parsers
 {
     public class ConditionalParser
     {
-        private readonly char[] _trimFromClauses = {' ', '(', ')'};
+        private readonly RedisSqlQueryEngine _queryEngine;
+
+        public ConditionalParser()
+        {
+            _queryEngine = new RedisSqlQueryEngine();
+        }
+
         private readonly string[] _operations = {">=", "<=", ">", "<", "!=", "="};
 
-        private bool Parse(string condition, ICollection<string> result, ICollection<string> operators)
+        private static bool Parse(string condition, ICollection<string> clauses)
         {
             if (string.IsNullOrWhiteSpace(condition)) return true;
 
-            int openings = 0, closings = 0, innerCounter = 0;
+            condition = condition.Trim();
+
+            int openings = 0, closings = 0;
 
             var singleQuote = false;
 
@@ -33,44 +41,127 @@ namespace Redis.SQL.Client.Parsers
 
                 if (singleQuote) goto SetClause; //Dont parse special keywords until the single quote is closed
 
-                if (openings == closings && (i == 0 || condition[i - 1] == ' '))
+                bool orOperator = IsOrOperator(condition.Substring(i)), andOperator = IsAndOperator(condition.Substring(i));
+
+                if (openings == closings && (orOperator || andOperator))
                 {
-                    string orString = Keywords.Or.ToString().ToLower(), andString = Keywords.And.ToString().ToLower();
-                    if (condition.Substring(i).ToLower().StartsWith(orString + " "))
+                    if (!string.IsNullOrWhiteSpace(clause))
                     {
-                        if (!string.IsNullOrWhiteSpace(clause)) result.Add(clause.Trim(_trimFromClauses));
-                        operators.Add(orString);
-                        return Parse(condition.Substring(i + 2), result, operators);
+                        clauses.Add(clause.Trim());
                     }
-                    
-                    if (condition.Substring(i).ToLower().StartsWith(andString + " "))
+
+                    if (!(IsAndOperator(condition) || IsOrOperator(condition)))
                     {
-                        if (!string.IsNullOrWhiteSpace(clause)) result.Add(clause.Trim(_trimFromClauses));
-                        operators.Add(andString);
-                        return Parse(condition.Substring(i + 3), result, operators);
+                        clauses.Add("(" + condition + ")");
                     }
+                    return Parse(condition.Substring(andOperator ? i + 3 : i + 2).Trim(), clauses);
                 }
 
-                SetClause:
+
+            SetClause:
                 clause += condition[i];
-                innerCounter++;
 
                 if (singleQuote) continue;
 
-                if (openings > 0 && openings == closings) //Extract the inner clause from the brackets and parse the rest of the string
+                if (openings > 0 && openings == closings)
                 {
-                    return Parse(clause.Substring(1, innerCounter - 2), result, operators) && Parse(condition.Substring(i + 1), result, operators);
+                    if (condition.Contains(" " + Keywords.And.ToString().ToLower() + " ") || condition.Contains(" " + Keywords.Or.ToString().ToLower() + " "))
+                    {
+                        clauses.Add("(" + condition + ")");
+                    }
+                    else
+                    {
+                        clauses.Add(condition.Substring(clause.IndexOf('(') + 1, clause.LastIndexOf(')') - 1));
+                    }
+                    if (clause.Contains(" " + Keywords.And.ToString().ToLower() + " ") || clause.Contains(" " + Keywords.Or.ToString().ToLower() + " "))
+                    {
+                        clauses.Add("(" + clause + ")");
+                    }
+                    return Parse(clause.Substring(clause.IndexOf('(') + 1, clause.LastIndexOf(')') - 1), clauses) && Parse(condition.Substring(i + 1), clauses);
                 }
             }
 
-            result.Add(clause.Trim(_trimFromClauses));
+            clauses.Add(clause);
             return true;
         }
 
-        public async Task ParseCondition(string condition)
+        private static IList<string> OrderClauses(IEnumerable<string> clauses)
         {
-            ICollection<string> clauses = new List<string>(), operators = new List<string>();
-            Parse(condition, clauses, operators);
+            return clauses.Select(x => x.Trim()).OrderBy(x => x.Split(new[] { Keywords.And.ToString().ToLower(), Keywords.Or.ToString().ToLower() }, StringSplitOptions.RemoveEmptyEntries).Length).ToList();
+        }
+
+        private static IList<string> FilterDuplicateClauses(IList<string> clauses)
+        {
+            clauses = clauses.Distinct().ToList();
+
+            var duplicates = clauses.Where(clause => clauses.Any(x => string.Equals("(" + x + ")", clause, StringComparison.OrdinalIgnoreCase))).ToList();
+
+            duplicates.ForEach(x => clauses.Remove(x));
+
+            return clauses;
+        }
+
+        private static string RemoveWhiteSpacesFromCondition(string condition)
+        {
+            var stringParam = false;
+            var result = string.Empty;
+            for (var i = 0; i < condition.Length; i++)
+            {
+                if (condition[i] == '\'')
+                {
+                    result += condition[i];
+                    stringParam = !stringParam;
+                    continue;
+                }
+
+                if (stringParam)
+                {
+                    result += condition[i];
+                    continue;
+                }
+
+                if (condition[i] == ' ') continue;
+
+                if (IsAndOperator(condition.Substring(i)))
+                {
+                    result += " " + Keywords.And.ToString().ToLower() + " ";
+                    i += 2;
+                    continue;
+                }
+
+                if (IsOrOperator(condition.Substring(i)))
+                {
+                    result += " " + Keywords.Or.ToString().ToLower() + " ";
+                    i++;
+                    continue;
+                }
+
+                result += condition[i];
+            }
+
+            return result;
+        }
+
+        private static bool IsOrOperator(string condition)
+        {
+            condition = condition.ToLower();
+            var orString = Keywords.Or.ToString().ToLower();
+            return condition.StartsWith(orString + " ") || condition.StartsWith(orString + "(");
+        }
+
+        private static bool IsAndOperator(string condition)
+        {
+            condition = condition.ToLower();
+            var andString = Keywords.And.ToString().ToLower();
+            return condition.StartsWith(andString + " ") || condition.StartsWith(andString + "(");
+        }
+
+        public async Task ParseCondition(string entityName, string condition)
+        {
+            IList<string> clauses = new List<string>();
+
+            Parse(RemoveWhiteSpacesFromCondition(condition), clauses);
+            clauses = FilterDuplicateClauses(OrderClauses(clauses));
 
             while (clauses.Any())
             {
@@ -84,14 +175,9 @@ namespace Redis.SQL.Client.Parsers
                     if (!string.Equals(property, clause, StringComparison.OrdinalIgnoreCase) && property.All(x => x != '\''))
                     {
                         var value = clause.Substring(clause.IndexOf(operation, StringComparison.OrdinalIgnoreCase) + operation.Length).Trim('\'', ' ');
-                        var x = await new RedisSqlQueryEngine().ExecuteCondition("user", property, (Operator)(Math.Pow(2D, i)), value);
+                        var keys = await _queryEngine.ExecuteCondition(entityName, property, (Operator)Math.Pow(2D, i), value);
                     }
                 }
-
-
-                
-
-
             }
         }
     }
