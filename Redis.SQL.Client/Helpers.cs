@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
+using Redis.SQL.Client.Enums;
 
 namespace Redis.SQL.Client
 {
@@ -23,13 +24,13 @@ namespace Redis.SQL.Client
 
         internal static string GetTimeSpanRedisValue(TimeSpan time) => time.TotalMilliseconds.ToString(CultureInfo.InvariantCulture);
 
-        internal static string GetBooleanRedisValue(bool value) => (value ? 0 : 1).ToString();
+        internal static string GetBooleanRedisValue(bool value) => (value ? (long)RedisBoolean.True : (long)RedisBoolean.False).ToString();
 
-        internal static string GetEntityStoreKey(string entityName, string identifier) => (entityName.ToLower() + Constants.EntityDataDirectoryName + identifier.ToLower()).Trim();
+        internal static string GetEntityStoreKey(string entityName, string identifier) => entityName.ToLower() + Constants.EntityDataDirectoryName + identifier.ToLower();
 
-        internal static string GetEntityIndexKey(string entityName, string property) => (entityName.ToLower() + Constants.EntityIndexesDirectoryName + property.ToLower()).Trim();
+        internal static string GetEntityIndexKey(string entityName, string property) => entityName.ToLower() + Constants.EntityIndexesDirectoryName + property.ToLower();
 
-        internal static string GetPropertyCollectionKey(string entityName, string property) => (entityName.ToLower() + Constants.EntityPropertyCollectionDirectoryName + property.ToLower()).Trim();
+        internal static string GetPropertyCollectionKey(string entityName, string property) => entityName.ToLower() + Constants.EntityPropertyCollectionDirectoryName + property.ToLower();
 
         internal static string GetEntityCountKey(string entityName) => entityName.ToLower() + Constants.EntityCountKey;
 

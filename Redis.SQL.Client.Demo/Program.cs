@@ -10,7 +10,7 @@ namespace Redis.SQL.Client.Demo
         public static void Main(string[] args)
         {
             var parser = new ConditionalParser();
-            parser.ParseCondition(@"age > 25");
+            parser.ParseCondition(@"name !=     'ahmed'");
 
 
             //parser.ParseCondition(@"((x==1)OR y == 2)", clauses, operators);

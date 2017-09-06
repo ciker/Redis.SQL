@@ -1,4 +1,4 @@
-﻿namespace Redis.SQL.Client
+﻿namespace Redis.SQL.Client.Enums
 {
     internal enum Operator : long
     {
@@ -7,7 +7,6 @@
         GreaterThan = 4,
         LessThan = 8,
         NotEqual = 16,
-        Equals = 32,
-        Contains = 64
+        Equals = 32
     }
 }

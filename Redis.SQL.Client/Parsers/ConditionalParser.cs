@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Redis.SQL.Client.Engines;
+using Redis.SQL.Client.Enums;
 
 namespace Redis.SQL.Client.Parsers
 {
     public class ConditionalParser
     {
         private readonly char[] _trimFromClauses = {' ', '(', ')'};
-        private readonly string[] _operations = {">=", "<=", ">", "<", "!=", "=", "in["};
+        private readonly string[] _operations = {">=", "<=", ">", "<", "!=", "="};
 
         private bool Parse(string condition, ICollection<string> result, ICollection<string> operators)
         {
@@ -77,7 +78,7 @@ namespace Redis.SQL.Client.Parsers
                 for (var i = 0; i < _operations.Length; i++)
                 {
                     var operation = _operations[i];
-                    var property = clause.Split(new []{ operation }, StringSplitOptions.RemoveEmptyEntries).First();
+                    var property = clause.Split(new []{ operation }, StringSplitOptions.RemoveEmptyEntries).First().Trim();
 
                     if (!string.Equals(property, clause, StringComparison.OrdinalIgnoreCase) && property.All(x => x != '\''))
                     {
