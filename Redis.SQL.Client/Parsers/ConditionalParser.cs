@@ -35,17 +35,18 @@ namespace Redis.SQL.Client.Parsers
 
                 if (openings == closings && (i == 0 || condition[i - 1] == ' '))
                 {
-                    if (condition.Substring(i).ToLower().StartsWith("or "))
+                    string orString = Keywords.Or.ToString().ToLower(), andString = Keywords.And.ToString().ToLower();
+                    if (condition.Substring(i).ToLower().StartsWith(orString + " "))
                     {
                         if (!string.IsNullOrWhiteSpace(clause)) result.Add(clause.Trim(_trimFromClauses));
-                        operators.Add("or");
+                        operators.Add(orString);
                         return Parse(condition.Substring(i + 2), result, operators);
                     }
                     
-                    if (condition.Substring(i).ToLower().StartsWith("and "))
+                    if (condition.Substring(i).ToLower().StartsWith(andString + " "))
                     {
                         if (!string.IsNullOrWhiteSpace(clause)) result.Add(clause.Trim(_trimFromClauses));
-                        operators.Add("and");
+                        operators.Add(andString);
                         return Parse(condition.Substring(i + 3), result, operators);
                     }
                 }

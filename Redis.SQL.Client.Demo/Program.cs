@@ -10,11 +10,11 @@ namespace Redis.SQL.Client.Demo
         public static void Main(string[] args)
         {
             var parser = new ConditionalParser();
-            parser.ParseCondition(@"name !=     'ahmed'");
+            //parser.ParseCondition(@"name !=     'ahmed'");
 
 
             //parser.ParseCondition(@"((x==1)OR y == 2)", clauses, operators);
-            //parser.ParseCondition(@"((((((x == 'a or)())b' Or x > 2)) aNd ((orx < 5)))OR    (y==10))))");
+            parser.ParseCondition(@"((((((x == 'a or)())b' Or x > 2)) aNd ((orx < 5)))OR    (y==10))))");
 
 
             //var u1 = new User
