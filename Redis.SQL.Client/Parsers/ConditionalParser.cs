@@ -19,128 +19,79 @@ namespace Redis.SQL.Client.Parsers
 
         private readonly string[] _operations = {">=", "<=", ">", "<", "!=", "="};
 
-        private static bool Parse(string condition, ICollection<string> clauses)
-        {
-            if (string.IsNullOrWhiteSpace(condition)) return true;
+        private readonly BinaryTree<string> _parsingTree = new BinaryTree<string>();
 
-            condition = condition.Trim();
-
-            int openings = 0, closings = 0;
-
-            var singleQuote = false;
-
-            var clause = string.Empty;
-
-            for (var i = 0; i < condition.Length; i++) //Iterate over the whole string
-            {
-                switch (condition[i])
-                {
-                    case '(': if(!singleQuote) openings++; break;
-                    case ')': if(!singleQuote) closings++; break;
-                    case '\'': singleQuote = !singleQuote; break;
-                }
-
-                if (singleQuote) goto SetClause; //Dont parse special keywords until the single quote is closed
-
-                bool orOperator = IsOrOperator(condition.Substring(i)), andOperator = IsAndOperator(condition.Substring(i));
-
-                if (openings == closings && (orOperator || andOperator))
-                {
-                    if (!string.IsNullOrWhiteSpace(clause))
-                    {
-                        clauses.Add(clause.Trim());
-                    }
-
-                    if (!(IsAndOperator(condition) || IsOrOperator(condition)))
-                    {
-                        clauses.Add("(" + condition + ")");
-                    }
-                    return Parse(condition.Substring(andOperator ? i + 3 : i + 2).Trim(), clauses);
-                }
-
-
-            SetClause:
-                clause += condition[i];
-
-                if (singleQuote) continue;
-
-                if (openings > 0 && openings == closings)
-                {
-                    if (condition.Contains(" " + Keywords.And.ToString().ToLower() + " ") || condition.Contains(" " + Keywords.Or.ToString().ToLower() + " "))
-                    {
-                        clauses.Add("(" + condition + ")");
-                    }
-                    else
-                    {
-                        clauses.Add(condition.Substring(clause.IndexOf('(') + 1, clause.LastIndexOf(')') - 1));
-                    }
-                    if (clause.Contains(" " + Keywords.And.ToString().ToLower() + " ") || clause.Contains(" " + Keywords.Or.ToString().ToLower() + " "))
-                    {
-                        clauses.Add("(" + clause + ")");
-                    }
-                    return Parse(clause.Substring(clause.IndexOf('(') + 1, clause.LastIndexOf(')') - 1), clauses) && Parse(condition.Substring(i + 1), clauses);
-                }
-            }
-
-            clauses.Add(clause);
-            return true;
-        }
-
-        private static IList<string> OrderClauses(IEnumerable<string> clauses)
-        {
-            return clauses.Select(x => x.Trim()).OrderBy(x => x.Split(new[] { Keywords.And.ToString().ToLower(), Keywords.Or.ToString().ToLower() }, StringSplitOptions.RemoveEmptyEntries).Length).ToList();
-        }
-
-        private static IList<string> FilterDuplicateClauses(IList<string> clauses)
-        {
-            clauses = clauses.Distinct().ToList();
-
-            var duplicates = clauses.Where(clause => clauses.Any(x => string.Equals("(" + x + ")", clause, StringComparison.OrdinalIgnoreCase))).ToList();
-
-            duplicates.ForEach(x => clauses.Remove(x));
-
-            return clauses;
-        }
-
-        private static string RemoveWhiteSpacesFromCondition(string condition)
+        private void Tokenize(string condition)
         {
             var stringParam = false;
-            var result = string.Empty;
+            var token = string.Empty;
+
+            var currentNode = _parsingTree;
+
             for (var i = 0; i < condition.Length; i++)
             {
                 if (condition[i] == '\'')
                 {
-                    result += condition[i];
+                    token += '\'';
                     stringParam = !stringParam;
+                    if (!stringParam)
+                    {
+                        token = AddToken(currentNode, token);
+                    }
                     continue;
                 }
 
                 if (stringParam)
                 {
-                    result += condition[i];
+                    token += condition[i];
                     continue;
                 }
 
                 if (condition[i] == ' ') continue;
 
+                if (condition[i] == '(')
+                {
+                    var child = new BinaryTree<string>();
+                    currentNode.AddChild(child);
+                    currentNode = child;
+                    continue;
+                }
+
+                if (condition[i] == ')')
+                {
+                    if (!string.IsNullOrEmpty(token))
+                    {
+                        token = AddToken(currentNode, token);
+                    }
+                    currentNode = currentNode.Parent;
+                    continue;
+                }
+
                 if (IsAndOperator(condition.Substring(i)))
                 {
-                    result += " " + Keywords.And.ToString().ToLower() + " ";
+                    currentNode.SetValue(Keywords.And.ToString());
+                    token = AddToken(currentNode, token);
                     i += 2;
                     continue;
                 }
 
                 if (IsOrOperator(condition.Substring(i)))
                 {
-                    result += " " + Keywords.Or.ToString().ToLower() + " ";
+                    currentNode.SetValue(Keywords.Or.ToString());
+                    token = AddToken(currentNode, token);
                     i++;
                     continue;
                 }
-
-                result += condition[i];
+                
+                token += condition[i];
             }
+        }
 
-            return result;
+        private static string AddToken(BinaryTree<string> currentNode, string token)
+        {
+            if (string.IsNullOrWhiteSpace(token)) return string.Empty;
+            currentNode.AddChild(new BinaryTree<string>(token));
+            return string.Empty;
         }
 
         private static bool IsOrOperator(string condition)
@@ -157,15 +108,34 @@ namespace Redis.SQL.Client.Parsers
             return condition.StartsWith(andString + " ") || condition.StartsWith(andString + "(");
         }
 
+
+
+
+
+
+
         public async Task ParseCondition(string entityName, string condition)
         {
+            Tokenize(condition);
+
+            foreach (var item in _parsingTree)
+            {
+                if (item.Value == null)
+                {
+                    
+                }
+            }
+
+            var s = _parsingTree.Where(x => x.Value != null);
             IList<string> clauses = new List<string>();
+            IList <IEnumerable<string>> targetKeys = new List<IEnumerable<string>>();
 
-            var watch = new Stopwatch();
+
+            Stopwatch watch = new Stopwatch();
 
 
-            Parse(RemoveWhiteSpacesFromCondition(condition), clauses);
-            clauses = FilterDuplicateClauses(OrderClauses(clauses));
+
+
             
             while (clauses.Any())
             {
@@ -176,12 +146,13 @@ namespace Redis.SQL.Client.Parsers
                     var operation = _operations[i];
                     var property = clause.Split(new []{ operation }, StringSplitOptions.RemoveEmptyEntries).First().Trim();
 
-                    if (!string.Equals(property, clause, StringComparison.OrdinalIgnoreCase) && property.All(x => x != '\''))
-                    {
-                        var value = clause.Substring(clause.IndexOf(operation, StringComparison.OrdinalIgnoreCase) + operation.Length).Trim('\'', ' ');
-                        var keys = await _queryEngine.ExecuteCondition(entityName, property, (Operator)Math.Pow(2D, i), value);
-                    }
+                    if (string.Equals(property, clause, StringComparison.OrdinalIgnoreCase) || property.Any(x => x == '\'')) continue;
+
+                    var value = clause.Substring(clause.IndexOf(operation, StringComparison.OrdinalIgnoreCase) + operation.Length).Trim('\'');
+                    targetKeys.Add(await _queryEngine.ExecuteCondition(entityName, property, (Operator)Math.Pow(2D, i), value));
+                    break;
                 }
+                clauses.RemoveAt(0);
             }
         }
     }
