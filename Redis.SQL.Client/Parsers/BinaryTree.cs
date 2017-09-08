@@ -59,6 +59,14 @@ namespace Redis.SQL.Client.Parsers
             return this;
         }
 
+        internal BinaryTree<T> GetRoot()
+        {
+            var pointer = this;
+            while (!pointer.IsRoot())
+                pointer = pointer.Parent;
+            return pointer;
+        }
+
         internal bool IsLeaf() => LeftChild == null && RightChild == null;
 
         internal bool IsRoot() => Parent == null;
