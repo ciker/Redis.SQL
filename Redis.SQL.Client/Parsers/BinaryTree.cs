@@ -49,7 +49,11 @@ namespace Redis.SQL.Client.Parsers
             }
             else
             {
-                throw new Exception("Cannot add further children to the parse tree");
+                Parent = new BinaryTree<T>
+                {
+                    LeftChild = this,
+                    RightChild = child
+                };
             }
 
             return this;
