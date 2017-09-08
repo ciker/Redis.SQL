@@ -10,7 +10,7 @@ namespace Redis.SQL.Client.Demo
         public static void Main(string[] args)
         {
             var parser = new ConditionalParser();
-            //parser.ParseCondition("user", "x=1 and y='abc' or z=2");
+            //parser.ParseCondition("user", "x=1 and y='abc' or z=2 and r='abc or d'");
             //parser.ParseCondition("user", "(x=1 or y='abc')");
             parser.ParseCondition("user", "(((((x = 1 and y =2)) and t = 9) or (z=4 and y = 6)))");
 

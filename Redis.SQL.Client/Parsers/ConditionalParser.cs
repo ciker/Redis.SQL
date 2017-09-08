@@ -24,7 +24,7 @@ namespace Redis.SQL.Client.Parsers
         private void Tokenize(string condition)
         {
             var stringParam = false;
-            var token = string.Empty;
+            string token = string.Empty, lastOperator = string.Empty;
 
             for (var i = 0; i < condition.Length; i++)
             {
@@ -63,6 +63,7 @@ namespace Redis.SQL.Client.Parsers
 
                 if (IsKeyword(Keywords.And, condition.Substring(i)))
                 {
+                    lastOperator = Keywords.And.ToString();
                     _parsingTree.SetValue(Keywords.And.ToString());
                     token = AddToken(_parsingTree, token);
                     i += Keywords.And.ToString().Length - 1;
@@ -71,6 +72,7 @@ namespace Redis.SQL.Client.Parsers
 
                 if (IsKeyword(Keywords.Or, condition.Substring(i)))
                 {
+                    lastOperator = Keywords.Or.ToString();
                     _parsingTree.SetValue(Keywords.Or.ToString());
                     token = AddToken(_parsingTree, token);
                     i += Keywords.Or.ToString().Length - 1;
@@ -79,6 +81,9 @@ namespace Redis.SQL.Client.Parsers
                 
                 token += condition[i];
             }
+
+            if (!string.IsNullOrWhiteSpace(token))
+                _parsingTree.Value = lastOperator;
 
             AddToken(_parsingTree, token);
 
