@@ -19,7 +19,7 @@ namespace Redis.SQL.Client.Parsers
 
         private readonly string[] _operations = {">=", "<=", ">", "<", "!=", "="};
 
-        private BinaryTree<string> _parsingTree = new BinaryTree<string>();
+        private BinaryTree<string> _parseTree = new BinaryTree<string>();
 
         private void Tokenize(string condition)
         {
@@ -33,7 +33,7 @@ namespace Redis.SQL.Client.Parsers
                     token += '\'';
                     stringParam = !stringParam;
                     if (!stringParam)
-                        token = AddToken(_parsingTree, token);
+                        token = AddToken(_parseTree, token);
                     continue;
                 }
 
@@ -48,47 +48,42 @@ namespace Redis.SQL.Client.Parsers
                 if (condition[i] == '(')
                 {
                     var child = new BinaryTree<string>();
-                    _parsingTree.AddChild(child);
-                    _parsingTree = child;
+                    _parseTree.AddChild(child);
+                    _parseTree = child;
                     continue;
                 }
 
                 if (condition[i] == ')')
                 {
                     if (!string.IsNullOrEmpty(token))
-                        token = AddToken(_parsingTree, token);
-                    _parsingTree = _parsingTree.Parent;
+                        token = AddToken(_parseTree, token);
+                    _parseTree = _parseTree.Parent;
                     continue;
                 }
 
-                if (IsKeyword(Keywords.And, condition.Substring(i)))
+                if (IsKeyword(condition.Substring(i), out var keyword))
                 {
-                    lastOperator = Keywords.And.ToString();
-                    _parsingTree.SetValue(Keywords.And.ToString());
-                    token = AddToken(_parsingTree, token);
-                    i += Keywords.And.ToString().Length - 1;
+                    lastOperator = keyword;
+                    token = AddToken(_parseTree, token);
+                    if (!string.IsNullOrWhiteSpace(_parseTree.Value))
+                    {
+                        _parseTree = _parseTree.Parent ?? (_parseTree.Parent = new BinaryTree<string> {LeftChild = _parseTree});
+                    }
+                    _parseTree.SetValue(keyword);
+                    i += keyword.Length - 1;
                     continue;
                 }
 
-                if (IsKeyword(Keywords.Or, condition.Substring(i)))
-                {
-                    lastOperator = Keywords.Or.ToString();
-                    _parsingTree.SetValue(Keywords.Or.ToString());
-                    token = AddToken(_parsingTree, token);
-                    i += Keywords.Or.ToString().Length - 1;
-                    continue;
-                }
-                
                 token += condition[i];
             }
 
             if (!string.IsNullOrWhiteSpace(token))
-                _parsingTree.Value = lastOperator;
+                _parseTree.Value = lastOperator;
 
-            AddToken(_parsingTree, token);
+            AddToken(_parseTree, token);
 
-            while (!_parsingTree.IsRoot())
-                _parsingTree = _parsingTree.Parent;
+            while (!_parseTree.IsRoot())
+                _parseTree = _parseTree.Parent;
         }
 
         private static string AddToken(BinaryTree<string> currentNode, string token)
@@ -98,11 +93,25 @@ namespace Redis.SQL.Client.Parsers
             return string.Empty;
         }
 
-        private static bool IsKeyword(Keywords keyword, string condition)
+        private static bool IsKeyword(string condition, out string keyword)
         {
+            keyword = null;
             condition = condition.ToLower();
-            var lowerKeyword = keyword.ToString().ToLower();
-            return condition.StartsWith(lowerKeyword + " ") || condition.StartsWith(lowerKeyword + "(");
+            string andKeyword = Keywords.And.ToString().ToLower(), orKeyword = Keywords.Or.ToString().ToLower();
+
+            if (condition.StartsWith(andKeyword + " ") || condition.StartsWith(andKeyword + "("))
+            {
+                keyword = andKeyword;
+                return true;
+            }
+
+            if (condition.StartsWith(orKeyword + " ") || condition.StartsWith(orKeyword + "("))
+            {
+                keyword = orKeyword;
+                return true;
+            }
+
+            return false;
         }
 
 
@@ -113,13 +122,15 @@ namespace Redis.SQL.Client.Parsers
 
         public async Task ParseCondition(string entityName, string condition)
         {
+            Stopwatch watch = new Stopwatch();
+            watch.Start();
             Tokenize(condition);
-
+            watch.Stop();
+            var s = watch.ElapsedMilliseconds;
             IList<string> clauses = new List<string>();
             IList <IEnumerable<string>> targetKeys = new List<IEnumerable<string>>();
 
 
-            Stopwatch watch = new Stopwatch();
 
 
 
