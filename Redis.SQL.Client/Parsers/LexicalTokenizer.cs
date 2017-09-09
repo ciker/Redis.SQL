@@ -1,20 +1,25 @@
-﻿using Redis.SQL.Client.Enums;
+﻿using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using Redis.SQL.Client.Enums;
 
 namespace Redis.SQL.Client.Parsers
 {
-    internal class ConditionalTokenizer
+    internal class LexicalTokenizer
     {
-        private BinaryTree<string> _parseTree;
+        private readonly ICollection<string> _tokens;
 
-        internal ConditionalTokenizer()
+        private readonly string _pattern;
+
+        internal LexicalTokenizer(string pattern)
         {
-            _parseTree = new BinaryTree<string>();
+            _pattern = pattern;
+            _tokens = new List<string>();
         }
 
-        internal BinaryTree<string> Tokenize(string condition)
+        internal IEnumerable<string> Tokenize(string condition)
         {
             var stringParam = false;
-            string token = string.Empty, lastOperator = string.Empty;
+            var token = string.Empty;
 
             for (var i = 0; i < condition.Length; i++)
             {
@@ -23,7 +28,7 @@ namespace Redis.SQL.Client.Parsers
                     token += '\'';
                     stringParam = !stringParam;
                     if (!stringParam)
-                        token = AddToken(_parseTree, token);
+                        token = AddToken(token);
                     continue;
                 }
 
@@ -35,34 +40,17 @@ namespace Redis.SQL.Client.Parsers
 
                 if (condition[i] == ' ') continue;
 
-                if (condition[i] == '(')
+                if (condition[i] == '(' || condition[i] == ')')
                 {
-                    var child = new BinaryTree<string>();
-                    _parseTree.AddChild(child);
-                    _parseTree = child;
-                    continue;
-                }
-
-                if (condition[i] == ')')
-                {
-                    if (!string.IsNullOrEmpty(token))
-                        token = AddToken(_parseTree, token);
-
-                    if (_parseTree.Parent != null)
-                        _parseTree = _parseTree.Parent;
-
+                    AddToken(token);
+                    token = AddToken(condition[i].ToString());
                     continue;
                 }
 
                 if (IsKeyword(condition.Substring(i), out var keyword))
                 {
-                    lastOperator = keyword;
-                    token = AddToken(_parseTree, token);
-
-                    if (!string.IsNullOrWhiteSpace(_parseTree.Value))
-                        _parseTree = _parseTree.Parent ?? (_parseTree.Parent = new BinaryTree<string> { LeftChild = _parseTree });
-
-                    _parseTree.SetValue(keyword);
+                    AddToken(token);
+                    token = AddToken(" " + keyword + " ");
                     i += keyword.Length - 1;
                     continue;
                 }
@@ -70,18 +58,18 @@ namespace Redis.SQL.Client.Parsers
                 token += condition[i];
             }
 
-            if (!string.IsNullOrWhiteSpace(token))
-                _parseTree.Value = lastOperator;
-
-            AddToken(_parseTree, token);
-
-            return _parseTree = _parseTree.GetRoot();
+            AddToken(token);
+            return _tokens;
         }
 
-        private static string AddToken(BinaryTree<string> currentNode, string token)
+        private string AddToken(string token)
         {
             if (string.IsNullOrWhiteSpace(token)) return string.Empty;
-            currentNode.AddChild(new BinaryTree<string>(token));
+            if (!Regex.IsMatch(token, _pattern))
+            {
+                throw new SyntacticErrorException("Error Parsing: " + token);
+            }
+            _tokens.Add(token);
             return string.Empty;
         }
 

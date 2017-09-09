@@ -22,5 +22,9 @@ namespace Redis.SQL.Client
         internal const string EntityDataDirectoryName = ":data:";
 
         internal const int DefaultDatabaseIndex = 0;
+
+        internal const string WhereClauseTokenPattern = @"^(([\w-]+|[\w-]+.[\w-]+)(!=|=|>=|>|<|<=)+([\d.-]+|'[a-zA-Z0-9\s]+'|[tT]rue|[fF]alse)+|[aA][nN][dD]|[oO][rR]|\(|\))$";
+
+        //internal const string WhereClausePattern = @"^([\w-]+|[\w-]+.[\w-]+)(!=|=|>=|>|<|<=)+([\d.-]+|'[a-zA-Z0-9\s]+'|[tT]rue|[fF]alse)+$";
     }
 }

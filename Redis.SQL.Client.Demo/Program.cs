@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 using Redis.SQL.Client.Engines;
 using Redis.SQL.Client.Parsers;
 
@@ -9,11 +12,26 @@ namespace Redis.SQL.Client.Demo
     {
         public static void Main(string[] args)
         {
-            var parser = new ConditionalParser();
+
+            var parser = new ShiftReduceParser(new []
+            {
+                new GrammarRule { Symbol = "ROOT", Derivation = "^OPERAND$"}, 
+                new GrammarRule { Symbol = "ANDING", Derivation = "^OPERAND and OPERAND$"},
+                new GrammarRule { Symbol = "ORING", Derivation = "^OPERAND or OPERAND$"},
+                new GrammarRule { Symbol = "OPERAND", Derivation = "^ANDING$"},
+                new GrammarRule { Symbol = "OPERAND", Derivation = "^ORING$"},
+                new GrammarRule { Symbol = "OPERAND", Derivation = "^[(]OPERAND[)]$"},
+                new GrammarRule { Symbol = "OPERAND", Derivation = "^EXPRESSION$"},
+                new GrammarRule { Symbol = "EXPRESSION", Derivation = @"^([\w-]+|[\w-]+.[\w-]+)(!=|=|>=|>|<|<=)+([\d.-]+|'[a-zA-Z0-9\s]+'|[tT]rue|[fF]alse)+$"}, 
+            }, new List<string>{"(", ")", "and", "or"});
+
+            //parser.ParseCondition("user", "a=1 or (b='2' and c=3)");
+            parser.ParseCondition("user", "((a = 1 and c=3) or d =4) and e = 'abc'");
+            //parser.ParseCondition("user", @"x=1 and y='abc' or z=2 and r='abc or d' and m=' t t '");
             //parser.ParseCondition("user", "(x = 1 or y = 2 or z = 3) or r = 3");
             //parser.ParseCondition("user", "x=1 and y='abc' or z=2 and r='abc or d' and m=' t t '");
             //parser.ParseCondition("user", "(x=1 or y='abc')");
-            parser.ParseCondition("user", "(((((x = 1 and y =2)) and t = 9) or (z=4 and y = 6)))");
+            //parser.ParseCondition("user", "(((((x = 1 and y =2)) and t = 9) or (z=4 and y = 6)))");
 
 
 
