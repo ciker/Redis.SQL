@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Redis.SQL.Client.Engines;
-using Redis.SQL.Client.Enums;
 
 namespace Redis.SQL.Client.Parsers
 {
@@ -107,14 +102,10 @@ namespace Redis.SQL.Client.Parsers
 
         internal BinaryTree<string> ParseCondition(IEnumerable<string> tokens)
         {
-            Stopwatch watch = new Stopwatch(); //REMOVE THIS
-            watch.Start();
             if (ParseTokens(tokens.ToList(), out var tree))
             {
                 _parseTree = tree;
             }
-            watch.Stop();
-            var s = watch.ElapsedMilliseconds;
             return _parseTree;
         }
     }

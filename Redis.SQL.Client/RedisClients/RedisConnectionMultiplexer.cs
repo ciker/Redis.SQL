@@ -1,7 +1,7 @@
 ﻿using System;
 using StackExchange.Redis;
 
-namespace Redis.SQL.Client
+namespace Redis.SQL.Client.RedisClients
 {
     internal sealed class RedisConnectionMultiplexer
     {
