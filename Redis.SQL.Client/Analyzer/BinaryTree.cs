@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 
 namespace Redis.SQL.Client.Analyzer
 {
-    internal class BinaryTree<T> : IEnumerable<BinaryTree<T>>, IEnumerable
+    internal class BinaryTree<T> : IEnumerable<BinaryTree<T>>
     {
         internal BinaryTree<T> LeftChild { get; set; }
 

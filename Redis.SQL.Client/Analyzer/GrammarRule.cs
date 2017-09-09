@@ -1,15 +1,15 @@
 ﻿namespace Redis.SQL.Client.Analyzer
 {
-    public class GrammarRule
+    internal class GrammarRule
     {
         private string _symbol;
 
-        public string Symbol
+        internal string Symbol
         {
             get => _symbol;
             set => _symbol = value.ToUpper();
         }
 
-        public string Derivation { get; set; }
+        internal string Derivation { get; set; }
     }
 }

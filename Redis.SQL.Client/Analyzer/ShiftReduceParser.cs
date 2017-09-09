@@ -12,11 +12,11 @@ namespace Redis.SQL.Client.Analyzer
 
         private BinaryTree<string> _parseTree;
 
-        internal ShiftReduceParser(IEnumerable<GrammarRule> grammar, IEnumerable<string> excludedFromTree)
+        internal ShiftReduceParser(Grammar grammar)
         {
             _parseTree = new BinaryTree<string>();
-            _excludedFromTree = excludedFromTree;
-            _grammar = grammar;
+            _excludedFromTree = grammar.ExcludedTokens;
+            _grammar = grammar.Rules;
         }
 
         private bool ParseTokens(IList<string> tokens, out BinaryTree<string> tree)

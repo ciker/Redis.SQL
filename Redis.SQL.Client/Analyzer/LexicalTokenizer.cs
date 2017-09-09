@@ -65,7 +65,7 @@ namespace Redis.SQL.Client.Analyzer
         private string AddToken(string token)
         {
             if (string.IsNullOrWhiteSpace(token)) return string.Empty;
-            if (!Regex.IsMatch(token, _pattern))
+            if (!Regex.IsMatch(token.Trim(), _pattern))
             {
                 throw new SyntacticErrorException("Error Parsing: " + token);
             }
