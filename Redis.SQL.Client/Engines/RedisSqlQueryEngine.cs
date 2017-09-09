@@ -14,6 +14,7 @@ namespace Redis.SQL.Client.Engines
         private readonly IRedisHashStorageClient _hashClient;
         private readonly IRedisStringStorageClient _stringClient;
         private readonly IRedisZSetStorageClient _zSetClient;
+        private static readonly string[] _operators = {"<", ">", "<=", ">=", "!=", "="};
 
         internal RedisSqlQueryEngine()
         {
@@ -22,11 +23,23 @@ namespace Redis.SQL.Client.Engines
             _zSetClient = new RedisZSetStorageClient();
         }
 
-        internal async Task ExecuteTree(BinaryTree<string> tree)
+        internal async Task ExecuteTree(string entityName, BinaryTree<string> tree)
         {
             foreach (var item in tree)
             {
-                
+                if (!Enum.TryParse<WhereGrammar>(item.Value, true, out var result))
+                {
+                    for(var i = 0; i < _operators.Length; i++)
+                    {
+                        var op = _operators[i];
+                        var property = item.Value.Split(new[] { op }, StringSplitOptions.RemoveEmptyEntries).First().Trim();
+
+                        if (string.Equals(property, item.Value, StringComparison.OrdinalIgnoreCase) || property.Any(x => x == '\'')) continue;
+
+                        var value = item.Value.Substring(item.Value.IndexOf(op, StringComparison.OrdinalIgnoreCase) + op.Length).Trim('\'');
+                        var keys = await ExecuteCondition(entityName, property, (Operator)Math.Pow(2D, i), value);
+                    }
+                }
             }
         }
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace Redis.SQL.Client.Demo
 {
@@ -8,7 +9,9 @@ namespace Redis.SQL.Client.Demo
         {
             var client = new RedisSqlClient();
 
-            client.ExecuteWhere(@"(name = 'ahmed' or (age= 25 and class = 'b' )) or id=12778899");
+            //client.ExecuteWhere("user", @"name='john'");
+
+            client.ExecuteWhere("user", @"(name = 'ahmed' or (age= 25 and class = 'b' )) or id=12778899");
 
             //var u1 = new User
             //{

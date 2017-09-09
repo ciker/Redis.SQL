@@ -15,45 +15,9 @@ namespace Redis.SQL.Client.Analyzer
                 case GrammarType.Where:
                     SetWhereGrammar();
                     break;
-                case GrammarType.Expression:
-                    SetExpressionGrammar();
-                    break;
                 case GrammarType.Select:
                     break;
             }
-        }
-
-        private void SetExpressionGrammar()
-        {
-            string ExpressionToString(ExpressionGrammar arg) => arg.ToString().ToUpper();
-
-            string root = ExpressionToString(ExpressionGrammar.Root),
-                exp = ExpressionToString(ExpressionGrammar.Exp),
-                num = ExpressionToString(ExpressionGrammar.Num),
-                str = ExpressionToString(ExpressionGrammar.Str),
-                boolean = ExpressionToString(ExpressionGrammar.Bool),
-                variable = ExpressionToString(ExpressionGrammar.Var);
-            
-            Rules = new[]
-            {
-                new GrammarRule {Symbol = root, Derivation = exp},
-                new GrammarRule {Symbol = exp, Derivation = variable + "=" + str},
-                new GrammarRule {Symbol = exp, Derivation = variable + ">=" + str},
-                new GrammarRule {Symbol = exp, Derivation = variable + ">" + str},
-                new GrammarRule {Symbol = exp, Derivation = variable + "<=" + str},
-                new GrammarRule {Symbol = exp, Derivation = variable + "<" + str},
-                new GrammarRule {Symbol = exp, Derivation = variable + "=" + num},
-                new GrammarRule {Symbol = exp, Derivation = variable + ">=" + num},
-                new GrammarRule {Symbol = exp, Derivation = variable + ">" + num},
-                new GrammarRule {Symbol = exp, Derivation = variable + "<=" + num},
-                new GrammarRule {Symbol = exp, Derivation = variable + "<" + num},
-                new GrammarRule {Symbol = exp, Derivation = variable + "=" + boolean},
-                new GrammarRule {Symbol = num, Derivation = "[0-9]+"},
-                new GrammarRule {Symbol = str, Derivation = @"\'.*\'"},
-                new GrammarRule {Symbol = boolean, Derivation = "[tT][rR][uU][eE]"},
-                new GrammarRule {Symbol = boolean, Derivation = "[fF][aA][lL][sS][eE]"},
-                new GrammarRule {Symbol = variable, Derivation = @"([\w-]+|[\w-]+.[\w-]+)"},
-            };
         }
 
         private void SetWhereGrammar()
