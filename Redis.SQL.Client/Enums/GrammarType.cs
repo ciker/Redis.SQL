@@ -3,6 +3,7 @@
     internal enum GrammarType
     {
         Select,
-        Where
+        Where,
+        Expression
     }
 }

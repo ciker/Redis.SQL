@@ -4,12 +4,18 @@
     {
         private string _symbol;
 
+        private string _derivation;
+
         internal string Symbol
         {
             get => _symbol;
             set => _symbol = value.ToUpper();
         }
 
-        internal string Derivation { get; set; }
+        internal string Derivation
+        {
+            get => _derivation;
+            set => _derivation = "^" + value + "$";
+        }
     }
 }

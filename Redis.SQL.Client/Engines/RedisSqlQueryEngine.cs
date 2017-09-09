@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Redis.SQL.Client.Analyzer;
 using Redis.SQL.Client.Enums;
 using Redis.SQL.Client.RedisClients;
 using Redis.SQL.Client.RedisClients.Interfaces;
@@ -19,6 +20,14 @@ namespace Redis.SQL.Client.Engines
             _hashClient = new RedisHashStorageClient();
             _stringClient = new RedisStringStorageClient();
             _zSetClient = new RedisZSetStorageClient();
+        }
+
+        internal async Task ExecuteTree(BinaryTree<string> tree)
+        {
+            foreach (var item in tree)
+            {
+                
+            }
         }
 
         internal async Task<IEnumerable<string>> ExecuteCondition(string entityName, string property, Operator op, string value)

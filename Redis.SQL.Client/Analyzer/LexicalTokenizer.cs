@@ -6,18 +6,21 @@ namespace Redis.SQL.Client.Analyzer
 {
     internal class LexicalTokenizer
     {
-        private readonly ICollection<string> _tokens;
-
         private readonly string _pattern;
 
         internal LexicalTokenizer(string pattern)
         {
             _pattern = pattern;
-            _tokens = new List<string>();
+        }
+
+        internal LexicalTokenizer()
+        {
+            
         }
 
         internal IEnumerable<string> Tokenize(string condition)
         {
+            ICollection<string> result = new List<string>();
             var stringParam = false;
             var token = string.Empty;
 
@@ -28,7 +31,7 @@ namespace Redis.SQL.Client.Analyzer
                     token += '\'';
                     stringParam = !stringParam;
                     if (!stringParam)
-                        token = AddToken(token);
+                        token = AddToken(token, result);
                     continue;
                 }
 
@@ -42,15 +45,15 @@ namespace Redis.SQL.Client.Analyzer
 
                 if (condition[i] == '(' || condition[i] == ')')
                 {
-                    AddToken(token);
-                    token = AddToken(condition[i].ToString());
+                    AddToken(token, result);
+                    token = AddToken(condition[i].ToString(), result);
                     continue;
                 }
 
                 if (IsKeyword(condition.Substring(i), out var keyword))
                 {
-                    AddToken(token);
-                    token = AddToken(" " + keyword + " ");
+                    AddToken(token, result);
+                    token = AddToken(" " + keyword + " ", result);
                     i += keyword.Length - 1;
                     continue;
                 }
@@ -58,18 +61,18 @@ namespace Redis.SQL.Client.Analyzer
                 token += condition[i];
             }
 
-            AddToken(token);
-            return _tokens;
+            AddToken(token, result);
+            return result;
         }
 
-        private string AddToken(string token)
+        private string AddToken(string token, ICollection<string> tokens)
         {
             if (string.IsNullOrWhiteSpace(token)) return string.Empty;
-            if (!Regex.IsMatch(token.Trim(), _pattern))
+            if (!string.IsNullOrEmpty(_pattern) && !Regex.IsMatch(token.Trim(), _pattern))
             {
-                throw new SyntacticErrorException("Error Parsing: " + token);
+                throw new SyntacticErrorException(token);
             }
-            _tokens.Add(token);
+            tokens.Add(token);
             return string.Empty;
         }
 

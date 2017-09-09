@@ -10,12 +10,9 @@ namespace Redis.SQL.Client.Analyzer
 
         private readonly IEnumerable<string> _excludedFromTree;
 
-        private BinaryTree<string> _parseTree;
-
         internal ShiftReduceParser(Grammar grammar)
         {
-            _parseTree = new BinaryTree<string>();
-            _excludedFromTree = grammar.ExcludedTokens;
+            _excludedFromTree = grammar.ExcludedTokens ?? new string[0];
             _grammar = grammar.Rules;
         }
 
@@ -102,11 +99,11 @@ namespace Redis.SQL.Client.Analyzer
 
         internal BinaryTree<string> ParseCondition(IEnumerable<string> tokens)
         {
-            if (ParseTokens(tokens.ToList(), out var tree))
+            if (!ParseTokens(tokens.ToList(), out var tree))
             {
-                _parseTree = tree;
+                throw new ParsingException();
             }
-            return _parseTree;
+            return tree;
         }
     }
 }
