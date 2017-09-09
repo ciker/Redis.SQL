@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Redis.SQL.Client.Parsers
+namespace Redis.SQL.Client.Analyzer
 {
     public class SyntacticErrorException : Exception
     {

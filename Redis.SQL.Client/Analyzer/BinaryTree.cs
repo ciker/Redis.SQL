@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Redis.SQL.Client.Parsers
+namespace Redis.SQL.Client.Analyzer
 {
     internal class BinaryTree<T> : IEnumerable<BinaryTree<T>>, IEnumerable
     {

@@ -2,7 +2,7 @@
 using System.Text.RegularExpressions;
 using Redis.SQL.Client.Enums;
 
-namespace Redis.SQL.Client.Parsers
+namespace Redis.SQL.Client.Analyzer
 {
     internal class LexicalTokenizer
     {

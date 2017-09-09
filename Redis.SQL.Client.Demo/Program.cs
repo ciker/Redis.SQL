@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Redis.SQL.Client.Engines;
-using Redis.SQL.Client.Parsers;
 
 namespace Redis.SQL.Client.Demo
 {

@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Redis.SQL.Client.Parsers
+namespace Redis.SQL.Client.Analyzer
 {
     internal class ShiftReduceParser
     {
