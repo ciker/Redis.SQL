@@ -7,14 +7,14 @@ using Redis.SQL.Client.RedisClients.Interfaces;
 
 namespace Redis.SQL.Client.Engines
 {
-    internal class RedisSqlCreationEngine
+    public class RedisSqlCreationEngine
     {
         private readonly IRedisHashStorageClient _hashClient;
         private readonly IRedisStringStorageClient _stringClient;
         private readonly IRedisZSetStorageClient _zSetClient;
         private readonly IRedisSetStorageClient _setClient;
 
-        internal RedisSqlCreationEngine()
+        public RedisSqlCreationEngine()
         {
             _hashClient = new RedisHashStorageClient();
             _stringClient = new RedisStringStorageClient();
@@ -22,7 +22,7 @@ namespace Redis.SQL.Client.Engines
             _setClient = new RedisSetStorageClient();
         }
 
-        internal async Task CreateEntity<TEntity>(TEntity entity) where TEntity : class
+        public async Task CreateEntity<TEntity>(TEntity entity) where TEntity : class
         {
             var entityName = Helpers.GetTypeName<TEntity>();
             var identifier = Helpers.GenerateRandomString();
@@ -45,18 +45,19 @@ namespace Redis.SQL.Client.Engines
         private static string EncodeProperty<TEntity>(PropertyInfo property, TEntity entity)
         {
             var value = property.GetValue(entity);
+            var propertyTypeName = property.PropertyType.Name;
 
-            if (property.Name == TypeNames.DateTime.ToString())
+            if (propertyTypeName == TypeNames.DateTime.ToString())
             {
                 return Helpers.GetDateTimeRedisValue((DateTime)value);
             }
 
-            if (property.Name == TypeNames.TimeSpan.ToString())
+            if (propertyTypeName == TypeNames.TimeSpan.ToString())
             {
                 return Helpers.GetTimeSpanRedisValue((TimeSpan)value);
             }
 
-            if (property.Name == TypeNames.Boolean.ToString())
+            if (propertyTypeName == TypeNames.Boolean.ToString())
             {
                 return Helpers.GetBooleanRedisValue((bool)value);
             }
