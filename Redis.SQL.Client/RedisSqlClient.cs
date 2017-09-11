@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Redis.SQL.Client.Analyzer;
 using Redis.SQL.Client.Engines;
 
@@ -20,12 +19,11 @@ namespace Redis.SQL.Client
             _queryEngine = new RedisSqlQueryEngine();
         }
 
-
         public async Task ExecuteWhere(string entityName, string condition)
         {
             var tokens = _whereTokenizer.Tokenize(condition);
             var parseTree = _whereParser.ParseCondition(tokens);
-            await _queryEngine.ExecuteTree(entityName, parseTree);
+            var keys = await _queryEngine.ExecuteTree(entityName, parseTree);
         }
     }
 }

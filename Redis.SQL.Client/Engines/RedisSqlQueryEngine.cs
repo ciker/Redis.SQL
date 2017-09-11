@@ -9,12 +9,12 @@ using Redis.SQL.Client.RedisClients.Interfaces;
 
 namespace Redis.SQL.Client.Engines
 {
-    internal class RedisSqlQueryEngine
+    internal partial class RedisSqlQueryEngine
     {
         private readonly IRedisHashStorageClient _hashClient;
         private readonly IRedisStringStorageClient _stringClient;
         private readonly IRedisZSetStorageClient _zSetClient;
-        private static readonly string[] _operators = {"<", ">", "<=", ">=", "!=", "="};
+        private static readonly string[] Operators = {"<", ">", "<=", ">=", "!=", "="};
 
         internal RedisSqlQueryEngine()
         {
@@ -23,27 +23,7 @@ namespace Redis.SQL.Client.Engines
             _zSetClient = new RedisZSetStorageClient();
         }
 
-        internal async Task ExecuteTree(string entityName, BinaryTree<string> tree)
-        {
-            foreach (var item in tree)
-            {
-                if (!Enum.TryParse<WhereGrammar>(item.Value, true, out var result))
-                {
-                    for(var i = 0; i < _operators.Length; i++)
-                    {
-                        var op = _operators[i];
-                        var property = item.Value.Split(new[] { op }, StringSplitOptions.RemoveEmptyEntries).First().Trim();
-
-                        if (string.Equals(property, item.Value, StringComparison.OrdinalIgnoreCase) || property.Any(x => x == '\'')) continue;
-
-                        var value = item.Value.Substring(item.Value.IndexOf(op, StringComparison.OrdinalIgnoreCase) + op.Length).Trim('\'');
-                        var keys = await ExecuteCondition(entityName, property, (Operator)Math.Pow(2D, i), value);
-                    }
-                }
-            }
-        }
-
-        internal async Task<IEnumerable<string>> ExecuteCondition(string entityName, string property, Operator op, string value)
+        private async Task<string> ExecuteCondition(string entityName, string property, Operator op, string value)
         {
             value = await ResolvePropertyValue(entityName, property, value.ToLower());
 
@@ -114,20 +94,19 @@ namespace Redis.SQL.Client.Engines
             return (await _zSetClient.GetSortedSetElementsByValue(Helpers.GetPropertyCollectionKey(entityName, property), minValue, maxValue)).ToList();
         }
 
-        private async Task<IEnumerable<string>> MapRangeToKeys(IEnumerable<string> range, string entityName, string property)
+        private async Task<string> MapRangeToKeys(IEnumerable<string> range, string entityName, string property)
         {
             var result = new List<string>();
             foreach (var item in range)
             {
-                result.AddRange(await GetKeysMatchingPropertyValue(entityName, property, item));
+                result.Add(await GetKeysMatchingPropertyValue(entityName, property, item));
             }
-            return result;
+            return string.Join(",", result);
         }
 
-        private async Task<IEnumerable<string>> GetKeysMatchingPropertyValue(string entityName, string property, string value)
+        private async Task<string> GetKeysMatchingPropertyValue(string entityName, string property, string value)
         {
-            var keys = await _hashClient.GetHashField(Helpers.GetEntityIndexKey(entityName, property), value);
-            return keys == null ? new string[] { } : keys.Split(',');
+            return await _hashClient.GetHashField(Helpers.GetEntityIndexKey(entityName, property), value);
         }
     }
 }

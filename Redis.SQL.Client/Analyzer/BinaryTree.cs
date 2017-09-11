@@ -66,6 +66,11 @@ namespace Redis.SQL.Client.Analyzer
             return pointer;
         }
 
+        internal BinaryTree<T> GetSibling()
+        {
+            return Parent.LeftChild == this ? Parent.RightChild : Parent.LeftChild;
+        }
+
         internal bool IsLeaf() => LeftChild == null && RightChild == null;
 
         internal bool IsRoot() => Parent == null;
