@@ -13,7 +13,9 @@ namespace Redis.SQL.Client.Demo
 
             //client.ExecuteWhere("user", @"((age> 28 and class = 'b' ) or name = 'ahmed') or id=12778899");
 
-            client.ExecuteWhere("user", @"(name = 'ahmed' or (age> 28 and class = 'b' )) or id=12778899");
+            //client.ExecuteWhere("user", @"(name = 'ahmed' or (age> 28 and class = 'b' )) or id=12778899");
+
+            client.ExecuteWhere("user", @"id=123321 and age > 101");
 
             //var u1 = new User
             //{

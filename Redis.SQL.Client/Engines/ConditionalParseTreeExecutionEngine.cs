@@ -25,24 +25,24 @@ namespace Redis.SQL.Client.Engines
                     {
                         var sibling = node.GetSibling();
                         if (TryParseNode(sibling, out var _) || TryParseExpression(sibling, out var _, out var _, out var _)) continue;
-                        var result = string.Join(",", parent == WhereGrammar.Anding ?
-                            node.Value.Split(',').Intersect(sibling.Value.Split(',')) : node.Value.Split(',').Union(sibling.Value.Split(',')));
+                        var nodeResults = string.IsNullOrEmpty(node.Value) ? new string[0] : node.Value.Split(',');
+                        var siblingResults = string.IsNullOrEmpty(sibling.Value) ? new string[0] : sibling.Value.Split(',');
+                        var result = string.Join(",", parent == WhereGrammar.Anding ? nodeResults.Intersect(siblingResults) : nodeResults.Union(siblingResults));
                         PurgeNode(node.Parent, result);
                     }
                 }
             }
-            return tree.Value.Split(',');
-        }
 
-        private static bool TryParseNode(BinaryTree<string> node, out WhereGrammar grammar) => Enum.TryParse(node.Value, true, out grammar);
+            return string.IsNullOrEmpty(tree.Value)? new string[0] : tree.Value.Split(',');
+        }
 
         private static bool TryParseExpression(BinaryTree<string> node, out string property, out Operator op, out string value)
         {
             for (var i = 0; i < Operators.Length; i++)
             {
-                string operation = Operators[i], prop = node.Value.Split(new[] { operation }, StringSplitOptions.RemoveEmptyEntries).First().Trim();
-
-                if (string.Equals(prop, node.Value, StringComparison.OrdinalIgnoreCase) || prop.Any(x => x == '\'')) continue;
+                string operation = Operators[i], prop = node.Value?.Split(new[] { operation }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()?.Trim();
+                
+                if (string.Equals(prop, node.Value, StringComparison.OrdinalIgnoreCase) || (!string.IsNullOrEmpty(prop) && prop.Any(x => x == '\''))) continue;
 
                 value = node.Value.Substring(node.Value.IndexOf(operation, StringComparison.OrdinalIgnoreCase) + operation.Length).Trim('\'');
                 op = (Operator)Math.Pow(2D, i);
@@ -72,5 +72,7 @@ namespace Redis.SQL.Client.Engines
                 parent = parent.Parent;
             }
         }
+
+        private static bool TryParseNode(BinaryTree<string> node, out WhereGrammar grammar) => Enum.TryParse(node.Value, true, out grammar);
     }
 }
