@@ -13,11 +13,6 @@ namespace Redis.SQL.Client.Analyzer
             _pattern = pattern;
         }
 
-        internal LexicalTokenizer()
-        {
-            
-        }
-
         internal IEnumerable<string> Tokenize(string condition)
         {
             ICollection<string> result = new List<string>();
