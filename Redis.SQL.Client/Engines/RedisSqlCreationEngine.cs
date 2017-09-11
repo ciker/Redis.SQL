@@ -32,21 +32,21 @@ namespace Redis.SQL.Client.Engines
 
             foreach (var property in properties)
             {
-                var propertyValue = EncodeProperty(property, entity).ToLower();
+                var propertyTypeName = GetPropertyTypeName(property);
+                var propertyValue = GetPropertyValue(property, entity);
+                var encodedPropertyValue = EncodePropertyValue(propertyTypeName, propertyValue).ToLower();
+                var propertyScore = GetPropertyScore(propertyTypeName, encodedPropertyValue);
                 await _hashClient.SetHashField(Helpers.GetEntityPropertyTypesKey(entityName), property.Name, property.PropertyType.Name);
-                await _hashClient.AppendStringToHashField(Helpers.GetEntityIndexKey(entityName, property.Name), propertyValue, identifier);
-                await _zSetClient.AddToSortedSet(Helpers.GetPropertyCollectionKey(entityName, property.Name), propertyValue);
+                await _hashClient.AppendStringToHashField(Helpers.GetEntityIndexKey(entityName, property.Name), encodedPropertyValue, identifier);
+                await _zSetClient.AddToSortedSet(Helpers.GetPropertyCollectionKey(entityName, property.Name), encodedPropertyValue, propertyScore);
             }
 
             await _setClient.AddToSet(Constants.AllEntityNamesSetKeyName, entityName);
             await _stringClient.IncrementValue(Helpers.GetEntityCountKey(entityName));
         }
 
-        private static string EncodeProperty<TEntity>(PropertyInfo property, TEntity entity)
+        private static string EncodePropertyValue(string propertyTypeName, object value)
         {
-            var value = property.GetValue(entity);
-            var propertyTypeName = property.PropertyType.Name;
-
             if (propertyTypeName == TypeNames.DateTime.ToString())
             {
                 return Helpers.GetDateTimeRedisValue((DateTime)value);
@@ -64,5 +64,18 @@ namespace Redis.SQL.Client.Engines
 
             return value.ToString();
         }
+
+        private static double GetPropertyScore(string propertyTypeName, string encodedPropertyValue)
+        {
+            if (propertyTypeName == TypeNames.String.ToString() || propertyTypeName == TypeNames.Char.ToString())
+            {
+                return 0D;
+            }
+            return double.Parse(encodedPropertyValue);
+        }
+
+        private static string GetPropertyTypeName(PropertyInfo property) => property.PropertyType.Name;
+
+        private static object GetPropertyValue<TEntity>(PropertyInfo property, TEntity entity) => property.GetValue(entity);
     }
 }

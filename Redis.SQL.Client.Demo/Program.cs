@@ -8,7 +8,7 @@ namespace Redis.SQL.Client.Demo
     {
         public static void Main(string[] args)
         {
-            var client = new RedisSqlClient();
+            //var client = new RedisSqlClient();
 
             //client.ExecuteWhere("user", @"name='john'");
 
@@ -119,14 +119,14 @@ namespace Redis.SQL.Client.Demo
 
             var engine = new RedisSqlCreationEngine();
             engine.CreateEntity(u1);
-            //engine.CreateEntity(u2);
-            //engine.CreateEntity(u3);
-            //engine.CreateEntity(u4);
-            //engine.CreateEntity(u5);
-            //engine.CreateEntity(u6);
-            //engine.CreateEntity(u7);
-            //engine.CreateEntity(u8);
-            //engine.CreateEntity(u9);
+            engine.CreateEntity(u2);
+            engine.CreateEntity(u3);
+            engine.CreateEntity(u4);
+            engine.CreateEntity(u5);
+            engine.CreateEntity(u6);
+            engine.CreateEntity(u7);
+            engine.CreateEntity(u8);
+            engine.CreateEntity(u9);
 
 
             Console.ReadLine();
