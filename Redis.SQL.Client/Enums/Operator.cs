@@ -2,10 +2,10 @@
 {
     internal enum Operator : long
     {
-        LessThan = 1,
-        GreaterThan = 2,
-        LessThanOrEqualTo = 4,
-        GreaterThanOrEqualTo = 8,
+        LessThanOrEqualTo = 1,
+        GreaterThanOrEqualTo = 2,
+        LessThan = 4,
+        GreaterThan = 8,
         NotEqual = 16,
         Equals = 32
     }

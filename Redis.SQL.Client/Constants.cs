@@ -25,7 +25,7 @@ namespace Redis.SQL.Client
 
         internal const int DefaultDatabaseIndex = 0;
 
-        internal const string WhereClauseTokenPattern = @"^(([\w-]+|[\w-]+.[\w-]+)(!=|=|>=|>|<|<=)+([\d.-]+|'[a-zA-Z0-9\s]+'|[tT]rue|[fF]alse)+|[aA][nN][dD]|[oO][rR]|\(|\))$";
+        internal const string WhereClauseTokenPattern = @"^(([\w-]+|[\w-]+.[\w-]+)(!=|=|>=|>|<|<=)+([\d.-]+|'.*'|[tT]rue|[fF]alse)+|[aA][nN][dD]|[oO][rR]|\(|\))$";
 
         internal static readonly Grammar WhereGrammar = new Grammar(GrammarType.Where);
     }

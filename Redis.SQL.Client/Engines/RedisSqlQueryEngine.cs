@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Redis.SQL.Client.Enums;
@@ -13,7 +12,7 @@ namespace Redis.SQL.Client.Engines
         private readonly IRedisHashStorageClient _hashClient;
         private readonly IRedisStringStorageClient _stringClient;
         private readonly IRedisZSetStorageClient _zSetClient;
-        private static readonly string[] Operators = {"<", ">", "<=", ">=", "!=", "="};
+        private static readonly string[] Operators = {"<=", ">=", "<", ">", "!=", "="};
 
         internal RedisSqlQueryEngine()
         {
@@ -24,73 +23,49 @@ namespace Redis.SQL.Client.Engines
 
         private async Task<string> ExecuteCondition(string entityName, string property, Operator op, string value)
         {
-            value = await ResolvePropertyValue(entityName, property, value.ToLower());
+            var propertyTypeName = await _hashClient.GetHashField(Helpers.GetEntityPropertyTypesKey(entityName), property);
+            value = Helpers.EncodePropertyValue(propertyTypeName, value);
+            var score = Helpers.GetPropertyScore(propertyTypeName, value);
 
             if (op == Operator.Equals)
             {
                 return await GetKeysMatchingPropertyValue(entityName, property, value);
             }
 
-            if (op == Operator.GreaterThanOrEqualTo)
+            IEnumerable<string> range = new List<string>();
+
+            if (op == Operator.GreaterThanOrEqualTo || op == Operator.GreaterThan)
             {
-                var range = await GetRange(entityName, property, value, string.Empty);
-                return await MapRangeToKeys(range, entityName, property);
+                range = await (score.HasValue? GetRangeByScore(entityName, property, score.Value, double.PositiveInfinity) 
+                    : GetRangeByValue(entityName, property, value, string.Empty));
+
+                range = op == Operator.GreaterThan ? range.Where(x => x != value) : range; //Filter equal values
             }
 
-            if (op == Operator.LessThanOrEqualTo)
+            if (op == Operator.LessThanOrEqualTo || op == Operator.LessThan)
             {
-                var range = await GetRange(entityName, property, string.Empty, value);
-                return await MapRangeToKeys(range, entityName, property);
-            }
+                range = await (score.HasValue? GetRangeByScore(entityName, property, double.NegativeInfinity, score.Value) 
+                    :  GetRangeByValue(entityName, property, string.Empty, value));
 
-            if (op == Operator.GreaterThan)
-            {
-                var range = (await GetRange(entityName, property, value, string.Empty)).Where(x => x != value);
-                return await MapRangeToKeys(range, entityName, property);
-            }
-
-            if (op == Operator.LessThan)
-            {
-                var range = (await GetRange(entityName, property, string.Empty, value)).Where(x => x != value);
-                return await MapRangeToKeys(range, entityName, property);
+                range = op == Operator.LessThan ? range.Where(x => x != value) : range; //Filter equal values
             }
 
             if (op == Operator.NotEqual)
             {
-                var range = (await GetRange(entityName, property, string.Empty, string.Empty)).Where(x => x != value);
-                return await MapRangeToKeys(range, entityName, property);
+                range = (await GetRangeByValue(entityName, property, string.Empty, string.Empty)).Where(x => x != value);
             }
 
-            return null;
+            return await MapRangeToKeys(range, entityName, property);
         }
 
-        private async Task<string> ResolvePropertyValue(string entityName, string property, string value)
-        {
-            var propertyType = await _hashClient.GetHashField(Helpers.GetEntityPropertyTypesKey(entityName), property);
-            if (propertyType == TypeNames.DateTime.ToString())
-            {
-                return Helpers.GetDateTimeRedisValue(DateTime.Parse(value));
-            }
-
-            if (propertyType == TypeNames.TimeSpan.ToString())
-            {
-                return Helpers.GetTimeSpanRedisValue(TimeSpan.Parse(value));
-            }
-
-            if (propertyType == TypeNames.Boolean.ToString())
-            {
-                if (string.Equals(value, RedisBoolean.True.ToString(), StringComparison.OrdinalIgnoreCase)) return ((long)RedisBoolean.True).ToString();
-                if (string.Equals(value, RedisBoolean.False.ToString(), StringComparison.OrdinalIgnoreCase)) return ((long)RedisBoolean.False).ToString();
-
-                return Helpers.GetBooleanRedisValue(bool.Parse(value));
-            }
-
-            return value;
-        }
-
-        private async Task<IEnumerable<string>> GetRange(string entityName, string property, string minValue, string maxValue)
+        private async Task<IEnumerable<string>> GetRangeByValue(string entityName, string property, string minValue, string maxValue)
         {
             return (await _zSetClient.GetSortedSetElementsByValue(Helpers.GetPropertyCollectionKey(entityName, property), minValue, maxValue)).ToList();
+        }
+
+        private async Task<IEnumerable<string>> GetRangeByScore(string entityName, string property, double minScore, double maxScore)
+        {
+            return (await _zSetClient.GetSortedSetElementsByScore(Helpers.GetPropertyCollectionKey(entityName, property), minScore, maxScore)).ToList();
         }
 
         private async Task<string> MapRangeToKeys(IEnumerable<string> range, string entityName, string property)

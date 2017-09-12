@@ -39,7 +39,7 @@ namespace Redis.SQL.Client.Analyzer
                 new GrammarRule {Symbol = operand, Derivation = oring},
                 new GrammarRule {Symbol = operand, Derivation = "[(]" + operand + "[)]"},
                 new GrammarRule {Symbol = operand, Derivation = expression},
-                new GrammarRule {Symbol = operand,Derivation = @"([\w-]+|[\w-]+.[\w-]+)(!=|=|>=|>|<|<=)+([\d.-]+|'[a-zA-Z0-9\s]+'|[tT][rR][uU][eE]|[fF][aA][lL][sS][eE])+"}
+                new GrammarRule {Symbol = operand,Derivation = @"([\w-]+|[\w-]+.[\w-]+)(!=|=|>=|>|<|<=)+([\d.-]+|'.*'|[tT][rR][uU][eE]|[fF][aA][lL][sS][eE])+"}
             };
 
             ExcludedTokens = new[] { "(", ")", "and", "or" };
