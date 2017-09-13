@@ -16,7 +16,13 @@ namespace Redis.SQL.Client.Demo
 
             //client.ExecuteWhere("user", @"(name = 'ahmed' or (age> 28 and class = 'b' )) or id=12778899");
 
-            client.ExecuteWhere("user", @"(Created > '09/12/2017 21:40 pm' and class != 'a') or (id =12213822 and verified = true)");
+            var result = client.Execute<User>(@"(Created > '09/12/2017 21:40 pm' and class != 'a') or (id =12213822 and verified = true)");
+
+            result.ContinueWith(x =>
+            {
+                var res = x.Result;
+            });
+
             //client.ExecuteWhere("user", @"Created > '1/30/1991'");
             //client.ExecuteWhere("user", @"starttime>='13:00:00'");
             //client.ExecuteWhere("user", @"Created > '1/30/1991 13:30:45'");

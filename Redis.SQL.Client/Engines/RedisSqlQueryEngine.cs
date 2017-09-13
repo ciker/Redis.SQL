@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Redis.SQL.Client.Enums;
 using Redis.SQL.Client.RedisClients;
 using Redis.SQL.Client.RedisClients.Interfaces;
@@ -19,6 +20,11 @@ namespace Redis.SQL.Client.Engines
             _hashClient = new RedisHashStorageClient();
             _stringClient = new RedisStringStorageClient();
             _zSetClient = new RedisZSetStorageClient();
+        }
+
+        internal async Task<string> RetrieveEntityJsonByKey(string entityName, string key)
+        {
+            return await _stringClient.GetValue(Helpers.GetEntityStoreKey(entityName, key));
         }
 
         private async Task<string> ExecuteCondition(string entityName, string property, Operator op, string value)
