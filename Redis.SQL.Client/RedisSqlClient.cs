@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Redis.SQL.Client.Analyzer;
 using Redis.SQL.Client.Engines;
 

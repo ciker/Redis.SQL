@@ -38,6 +38,12 @@ namespace Redis.SQL.Client.Engines
 
         private static bool TryParseExpression(BinaryTree<string> node, out string property, out Operator op, out string value)
         {
+            property = default(string);
+            op = default(Operator);
+            value = default(string);
+
+            if (string.IsNullOrEmpty(node.Value)) return false;
+
             for (var i = 0; i < Operators.Length; i++)
             {
                 string operation = Operators[i], prop = node.Value?.Split(new[] { operation }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()?.Trim();
@@ -50,10 +56,6 @@ namespace Redis.SQL.Client.Engines
 
                 return true;
             }
-
-            property = default(string);
-            op = default(Operator);
-            value = default(string);
 
             return false;
         }

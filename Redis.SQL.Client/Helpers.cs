@@ -68,7 +68,7 @@ namespace Redis.SQL.Client
             return value;
 
         Error:
-            throw new SyntacticErrorException($"Error parsing: {propertyTypeName} = {value}");
+            throw new SyntacticErrorException($"{propertyTypeName} = {value}");
         }
 
         internal static double? GetPropertyScore(string propertyTypeName, string encodedPropertyValue)
