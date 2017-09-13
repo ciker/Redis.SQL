@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Redis.SQL.Client.Analyzer;
@@ -36,10 +37,23 @@ namespace Redis.SQL.Client
             return result;
         }
 
-        public async Task<IEnumerable<TEntity>> Execute<TEntity>(string condition)
+        public async Task<IEnumerable<TEntity>> Query<TEntity>(string condition)
         {
             var entityName = Helpers.GetTypeName<TEntity>();
             var entities = await ExecuteWhereStatement(entityName, condition);
+            return entities.Select(JsonConvert.DeserializeObject<TEntity>).ToList();
+        }
+
+
+
+
+
+        
+        public async Task<IEnumerable<TEntity>> Query<TEntity>(Expression<Func<TEntity, bool>> expr)
+        {
+            var expression = ExpressionTreeParser.ParseExpressionTree(string.Empty, (BinaryExpression)expr.Body);
+            var entityName = Helpers.GetTypeName<TEntity>();
+            var entities = await ExecuteWhereStatement(entityName, expression);
             return entities.Select(JsonConvert.DeserializeObject<TEntity>).ToList();
         }
     }

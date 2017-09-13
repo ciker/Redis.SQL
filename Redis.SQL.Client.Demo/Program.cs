@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
 using Redis.SQL.Client.Engines;
 
 namespace Redis.SQL.Client.Demo
@@ -16,7 +17,14 @@ namespace Redis.SQL.Client.Demo
 
             //client.ExecuteWhere("user", @"(name = 'ahmed' or (age> 28 and class = 'b' )) or id=12778899");
 
-            var result = client.Execute<User>(@"(Created > '09/12/2017 21:40 pm' and class != 'a') or (id =12213822 and verified = true)");
+            //var result = client.Execute<User>(@"(Created > '09/12/2017 21:40 pm' and class != 'a') or (id =12213822 and verified = true)");
+
+            var result = client.Query<User>(user => user.Id == 12778899 || (user.Name == "ahmed" && user.Verified == true));
+            //var result = client.Query<User>(x => !x.Verified);
+
+            //var result = client.Query<User>(x => x.Created == DateTime.Now);
+
+            //var result = client.Query<User>(x => x.Verified);
 
             result.ContinueWith(x =>
             {

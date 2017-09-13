@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Redis.SQL.Client.Enums;
 using Redis.SQL.Client.RedisClients;
 using Redis.SQL.Client.RedisClients.Interfaces;
@@ -29,6 +28,7 @@ namespace Redis.SQL.Client.Engines
 
         private async Task<string> ExecuteCondition(string entityName, string property, Operator op, string value)
         {
+            property = property.Split('.').Last();
             var propertyTypeName = await _hashClient.GetHashField(Helpers.GetEntityPropertyTypesKey(entityName), property);
             value = Helpers.EncodePropertyValue(propertyTypeName, value);
             var score = Helpers.GetPropertyScore(propertyTypeName, value);

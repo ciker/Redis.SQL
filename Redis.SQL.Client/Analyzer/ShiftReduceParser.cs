@@ -55,8 +55,8 @@ namespace Redis.SQL.Client.Analyzer
 
             while (parseStack.Count > 0)
             {
-                var peak = parseStack.Pop();
-                stackElements.Insert(0, peak);
+                var peek = parseStack.Pop();
+                stackElements.Insert(0, peek);
                 var stringElements = string.Join(string.Empty, stackElements.Select(x => x.Key)); 
                 if (CanReduce(stringElements, reduceRoot, out var grammarRule))
                 {
