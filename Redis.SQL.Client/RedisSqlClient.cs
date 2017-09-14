@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Redis.SQL.Client.Analyzer;
@@ -45,14 +44,20 @@ namespace Redis.SQL.Client
             {
                 var dictionary = new Dictionary<string, string>();
 
-                if (projectionalModel.ProjectAllProperties)
+                foreach (var prop in item)
                 {
-                 //PROJECT ALL   
+                    var name = prop.Name;
+
+                    if (!projectionalModel.ProjectAllProperties && projectionalModel.ProjectedProperties.All(x => !string.Equals(x, name, StringComparison.OrdinalIgnoreCase))) continue;
+
+                    var value = (prop as IEnumerable<dynamic>)?.FirstOrDefault()?.Value;
+
+                    if (value != null && !dictionary.TryGetValue(name, out string _))
+                    {
+                        dictionary.Add(name, value.ToString());
+                    }
                 }
-                foreach (var prop in projectionalModel.ProjectedProperties)
-                {
-                    dictionary.Add(prop, item[prop].ToString());
-                }
+
                 result.Add(dictionary);
             }
             return result;
@@ -101,13 +106,13 @@ namespace Redis.SQL.Client
             return await QueryEntity<TEntity>(expression);
         }
 
-        public async Task<IEnumerable<dynamic>> ExecuteSql(string sql)
+        public async Task<IEnumerable<IDictionary<string, string>>> ExecuteSql(string sql)
         {
             sql = sql.Trim();
             var selectKeyword = Keywords.Select.ToString();
             if (sql.StartsWith(selectKeyword.ToLower() + " ", StringComparison.OrdinalIgnoreCase))
             {
-                ExecuteSelectStatement(sql);
+                return await ExecuteSelectStatement(sql);
             }
             return null;
         }

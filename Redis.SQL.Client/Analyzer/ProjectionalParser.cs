@@ -55,7 +55,7 @@ namespace Redis.SQL.Client.Analyzer
                         if (model.ProjectAllProperties)
                             throw new ParsingException("Cannot Project Properties Alongside the * Operator");
 
-                        model.ProjectedProperties.Add(token);
+                        model.ProjectedProperties.Add(token.Split('.').Last());
                     }
                 }
 

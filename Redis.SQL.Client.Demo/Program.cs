@@ -26,11 +26,19 @@ namespace Redis.SQL.Client.Demo
 
             //var result = client.Query<User>(x => x.Verified);
 
-            var result = client.ExecuteSql("   SeLeCT  Id     frOm user    whEre name='ahmed'    ");
+            var result = client.ExecuteSql("   SeLeCT user.name,  id, user.created, age, class    frOm user    whEre (age = 25  and class > 'b')   ");
 
             result.ContinueWith(x =>
             {
                 var res = x.Result;
+
+                foreach (var item in res)
+                {
+                    foreach (var prop in item)
+                    {
+                        Console.WriteLine($"{prop.Key}: {prop.Value}");
+                    }
+                }
             });
 
             //client.ExecuteWhere("user", @"Created > '1/30/1991'");
