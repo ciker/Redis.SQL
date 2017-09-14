@@ -6,6 +6,7 @@ using System.Reflection;
 using Newtonsoft.Json;
 using Redis.SQL.Client.Analyzer;
 using Redis.SQL.Client.Enums;
+using Redis.SQL.Client.Exceptions;
 
 namespace Redis.SQL.Client
 {

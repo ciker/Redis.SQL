@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Redis.SQL.Client.Analyzer
+namespace Redis.SQL.Client.Exceptions
 {
     public class ParsingException : Exception
     {

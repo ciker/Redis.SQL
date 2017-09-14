@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Redis.SQL.Client.Analyzer.Interfaces;
 using Redis.SQL.Client.Enums;
+using Redis.SQL.Client.Exceptions;
 
 namespace Redis.SQL.Client.Analyzer.Lexers
 {

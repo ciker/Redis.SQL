@@ -19,26 +19,27 @@ namespace Redis.SQL.Client.Demo
 
             //var result = client.Execute<User>(@"(Created > '09/12/2017 21:40 pm' and class != 'a') or (id =12213822 and verified = true)");
 
-            //var result = client.Query<User>(user => user.Id == 12778899 || (user.Name == "ahmed" && user.Verified == true));
+            var result = client.Query<User>(user => user.Class =='c'|| (user.Name == "ahmed" && user.Verified));
+            //var result = client.Query<User>(user => !user.Verified && user.Verified);
             //var result = client.Query<User>(x => !x.Verified);
 
             //var result = client.Query<User>(x => x.Created == DateTime.Now);
 
             //var result = client.Query<User>(x => x.Verified);
 
-            var result = client.ExecuteSql("   SeLeCT user.name,  id, user.created, age, class    frOm user    whEre (age = 25  and class > 'b')   ");
+            //var result = client.ExecuteSql("   SeLeCT user.name,  id, user.created, age, class    frOm user    whEre (age = 25  and class > 'b')   ");
 
             result.ContinueWith(x =>
             {
                 var res = x.Result;
 
-                foreach (var item in res)
-                {
-                    foreach (var prop in item)
-                    {
-                        Console.WriteLine($"{prop.Key}: {prop.Value}");
-                    }
-                }
+                //foreach (var item in res)
+                //{
+                //    foreach (var prop in item)
+                //    {
+                //        Console.WriteLine($"{prop.Key}: {prop.Value}");
+                //    }
+                //}
             });
 
             //client.ExecuteWhere("user", @"Created > '1/30/1991'");

@@ -24,6 +24,8 @@ namespace Redis.SQL.Client
 
         private readonly RedisSqlQueryEngine _queryEngine;
 
+        private readonly ExpressionTreeParser _expressionTreeParser;
+
         public RedisSqlClient()
         {
             _conditionalTokenizer = new ConditionalLexicalTokenizer();
@@ -31,13 +33,14 @@ namespace Redis.SQL.Client
             _whereParser = new ShiftReduceParser(Constants.WhereGrammar);
             _projectionalParser = new ProjectionalParser();
             _queryEngine = new RedisSqlQueryEngine();
+            _expressionTreeParser = new ExpressionTreeParser();
         }
 
         private async Task<IEnumerable<IDictionary<string, string>>> ExecuteSelectStatement(string sql)
         {
             var tokens = _projectionalTokenizer.Tokenize(sql).ToList();
             var projectionalModel = _projectionalParser.ParseSelectStatement(tokens);
-            var entities = await ExecuteWhereStatement(projectionalModel.EntityName, projectionalModel.Query);
+            var entities = await QueryKeys(projectionalModel.EntityName, projectionalModel.Query);
             var deserialized = entities.Select(JsonConvert.DeserializeObject<dynamic>).ToList();
             var result = new List<IDictionary<string, string>>();
             foreach (var item in deserialized)
@@ -63,7 +66,7 @@ namespace Redis.SQL.Client
             return result;
         }
 
-        private async Task<IEnumerable<string>> ExecuteWhereStatement(string entityName, string condition)
+        private async Task<IEnumerable<string>> QueryKeys(string entityName, string condition)
         {
             IEnumerable<string> keys;
 
@@ -91,7 +94,7 @@ namespace Redis.SQL.Client
         private async Task<IEnumerable<TEntity>> QueryEntity<TEntity>(string condition)
         {
             var entityName = Helpers.GetTypeName<TEntity>();
-            var entities = await ExecuteWhereStatement(entityName, condition);
+            var entities = await QueryKeys(entityName, condition);
             return entities.Select(JsonConvert.DeserializeObject<TEntity>).ToList();
         }
 
@@ -102,8 +105,7 @@ namespace Redis.SQL.Client
         
         public async Task<IEnumerable<TEntity>> Query<TEntity>(Expression<Func<TEntity, bool>> expr)
         {
-            var expression = ExpressionTreeParser.ParseExpressionTree(string.Empty, (BinaryExpression)expr.Body);
-            return await QueryEntity<TEntity>(expression);
+            return await QueryEntity<TEntity>(_expressionTreeParser.ParseLambdaExpression(expr));
         }
 
         public async Task<IEnumerable<IDictionary<string, string>>> ExecuteSql(string sql)
