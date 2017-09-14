@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Redis.SQL.Client.RedisClients.Interfaces;
 using StackExchange.Redis;
 
@@ -27,6 +29,11 @@ namespace Redis.SQL.Client.RedisClients
         public async Task<bool> AddToSet<T>(string key, T value)
         {
             return await _redisDatabase.SetAddAsync(key.ToLower(), Helpers.SerializeRedisValue(value));
+        }
+
+        public async Task<IEnumerable<string>> GetSetMembers(string key)
+        {
+            return (await _redisDatabase.SetMembersAsync(key.ToLower())).Select(x => x.ToString());
         }
     }
 }

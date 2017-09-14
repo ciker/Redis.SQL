@@ -15,16 +15,18 @@ namespace Redis.SQL.Client.Demo
 
             //client.ExecuteWhere("user", @"((age> 28 and class = 'b' ) or name = 'ahmed') or id=12778899");
 
-            //client.ExecuteWhere("user", @"(name = 'ahmed' or (age> 28 and class = 'b' )) or id=12778899");
+            //var result = client.Query<User>(@"(name = 'ahmed' or (age> 28 and class = 'b' )) or id=12778899");
 
             //var result = client.Execute<User>(@"(Created > '09/12/2017 21:40 pm' and class != 'a') or (id =12213822 and verified = true)");
 
-            var result = client.Query<User>(user => user.Id == 12778899 || (user.Name == "ahmed" && user.Verified == true));
+            //var result = client.Query<User>(user => user.Id == 12778899 || (user.Name == "ahmed" && user.Verified == true));
             //var result = client.Query<User>(x => !x.Verified);
 
             //var result = client.Query<User>(x => x.Created == DateTime.Now);
 
             //var result = client.Query<User>(x => x.Verified);
+
+            var result = client.ExecuteSql("   SeLeCT  Id     frOm user    whEre name='ahmed'    ");
 
             result.ContinueWith(x =>
             {
@@ -136,7 +138,7 @@ namespace Redis.SQL.Client.Demo
                 Id = 12349131
             };
 
-            var engine = new RedisSqlCreationEngine();
+            //var engine = new RedisSqlCreationEngine();
             //engine.CreateEntity(u1);
             //engine.CreateEntity(u2);
             //engine.CreateEntity(u3);

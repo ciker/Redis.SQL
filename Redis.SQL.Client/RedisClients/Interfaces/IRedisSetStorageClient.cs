@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Redis.SQL.Client.RedisClients.Interfaces
 {
@@ -6,5 +7,6 @@ namespace Redis.SQL.Client.RedisClients.Interfaces
     {
         Task<bool> SetContains<T>(string key, T value);
         Task<bool> AddToSet<T>(string key, T value);
+        Task<IEnumerable<string>> GetSetMembers(string key);
     }
 }

@@ -12,6 +12,7 @@ namespace Redis.SQL.Client.Engines
         private readonly IRedisHashStorageClient _hashClient;
         private readonly IRedisStringStorageClient _stringClient;
         private readonly IRedisZSetStorageClient _zSetClient;
+        private readonly IRedisSetStorageClient _setClient;
         private static readonly string[] Operators = {"<=", ">=", "<", ">", "!=", "="};
 
         internal RedisSqlQueryEngine()
@@ -19,11 +20,17 @@ namespace Redis.SQL.Client.Engines
             _hashClient = new RedisHashStorageClient();
             _stringClient = new RedisStringStorageClient();
             _zSetClient = new RedisZSetStorageClient();
+            _setClient = new RedisSetStorageClient();
         }
 
         internal async Task<string> RetrieveEntityJsonByKey(string entityName, string key)
         {
             return await _stringClient.GetValue(Helpers.GetEntityStoreKey(entityName, key));
+        }
+
+        internal async Task<IEnumerable<string>> GetAllEntitykeys(string entityName)
+        {
+            return await _setClient.GetSetMembers(Helpers.GetEntityIdentifierCollectionKey(entityName));
         }
 
         private async Task<string> ExecuteCondition(string entityName, string property, Operator op, string value)

@@ -15,8 +15,6 @@ namespace Redis.SQL.Client.Analyzer
                 case GrammarType.Where:
                     SetWhereGrammar();
                     break;
-                case GrammarType.Select:
-                    break;
             }
         }
 

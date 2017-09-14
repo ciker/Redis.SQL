@@ -1,19 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using Redis.SQL.Client.Analyzer.Interfaces;
 using Redis.SQL.Client.Enums;
 
-namespace Redis.SQL.Client.Analyzer
+namespace Redis.SQL.Client.Analyzer.Lexers
 {
-    internal class LexicalTokenizer
+    internal class ConditionalLexicalTokenizer : ILexer
     {
-        private readonly string _pattern;
-
-        internal LexicalTokenizer(string pattern)
-        {
-            _pattern = pattern;
-        }
-
-        internal IEnumerable<string> Tokenize(string condition)
+        public IEnumerable<string> Tokenize(string condition)
         {
             ICollection<string> result = new List<string>();
             var stringParam = false;
@@ -60,10 +54,10 @@ namespace Redis.SQL.Client.Analyzer
             return result;
         }
 
-        private string AddToken(string token, ICollection<string> tokens)
+        private static string AddToken(string token, ICollection<string> tokens)
         {
             if (string.IsNullOrWhiteSpace(token)) return string.Empty;
-            if (!string.IsNullOrEmpty(_pattern) && !Regex.IsMatch(token.Trim(), _pattern))
+            if (!Regex.IsMatch(token.Trim(), Constants.WhereClauseTokenPattern))
             {
                 throw new SyntacticErrorException(token);
             }

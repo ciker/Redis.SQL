@@ -8,5 +8,10 @@ namespace Redis.SQL.Client.Analyzer
         {
             
         }
+
+        public ParsingException(string text) : base($"Error Parsing the Provided Expression: {text}")
+        {
+            
+        }
     }
 }

@@ -5,14 +5,14 @@ using Redis.SQL.Client.RedisClients.Interfaces;
 
 namespace Redis.SQL.Client.Engines
 {
-    public class RedisSqlCreationEngine
+    internal class RedisSqlCreationEngine
     {
         private readonly IRedisHashStorageClient _hashClient;
         private readonly IRedisStringStorageClient _stringClient;
         private readonly IRedisZSetStorageClient _zSetClient;
         private readonly IRedisSetStorageClient _setClient;
 
-        public RedisSqlCreationEngine()
+        internal RedisSqlCreationEngine()
         {
             _hashClient = new RedisHashStorageClient();
             _stringClient = new RedisStringStorageClient();
@@ -20,12 +20,13 @@ namespace Redis.SQL.Client.Engines
             _setClient = new RedisSetStorageClient();
         }
 
-        public async Task CreateEntity<TEntity>(TEntity entity) where TEntity : class
+        internal async Task CreateEntity<TEntity>(TEntity entity) where TEntity : class
         {
             var entityName = Helpers.GetTypeName<TEntity>();
             var identifier = Helpers.GenerateRandomString();
             var properties = Helpers.GetTypeProperties<TEntity>();
 
+            await _setClient.AddToSet(Helpers.GetEntityIdentifierCollectionKey(entityName), identifier);
             await _stringClient.StoreValue(Helpers.GetEntityStoreKey(entityName, identifier), entity);
 
             foreach (var property in properties)
