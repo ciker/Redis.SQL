@@ -24,7 +24,7 @@ namespace Redis.SQL.Client
 
         private readonly RedisSqlQueryEngine _queryEngine;
 
-        private readonly ExpressionTreeParser _expressionTreeParser;
+        private readonly LambdaExpressionTreeParser _lambdaExpressionTreeParser;
 
         public RedisSqlClient()
         {
@@ -33,7 +33,7 @@ namespace Redis.SQL.Client
             _whereParser = new ShiftReduceParser(Constants.WhereGrammar);
             _projectionalParser = new ProjectionalParser();
             _queryEngine = new RedisSqlQueryEngine();
-            _expressionTreeParser = new ExpressionTreeParser();
+            _lambdaExpressionTreeParser = new LambdaExpressionTreeParser();
         }
 
         private async Task<IEnumerable<IDictionary<string, string>>> ExecuteSelectStatement(string sql)
@@ -105,7 +105,7 @@ namespace Redis.SQL.Client
         
         public async Task<IEnumerable<TEntity>> Query<TEntity>(Expression<Func<TEntity, bool>> expr)
         {
-            return await QueryEntity<TEntity>(_expressionTreeParser.ParseLambdaExpression(expr));
+            return await QueryEntity<TEntity>(_lambdaExpressionTreeParser.ParseLambdaExpression(expr));
         }
 
         public async Task<IEnumerable<IDictionary<string, string>>> ExecuteSql(string sql)

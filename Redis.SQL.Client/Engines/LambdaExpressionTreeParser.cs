@@ -4,7 +4,7 @@ using Redis.SQL.Client.Exceptions;
 
 namespace Redis.SQL.Client.Engines
 {
-    internal class ExpressionTreeParser
+    internal class LambdaExpressionTreeParser
     {
         private static readonly Type BooleanType = typeof(bool);
 

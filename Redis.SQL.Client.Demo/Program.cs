@@ -19,7 +19,7 @@ namespace Redis.SQL.Client.Demo
 
             //var result = client.Execute<User>(@"(Created > '09/12/2017 21:40 pm' and class != 'a') or (id =12213822 and verified = true)");
 
-            var result = client.Query<User>(user => user.Class =='c'|| (user.Name == "ahmed" && user.Verified));
+            var result = client.Query<User>(user => user.Class =='b'|| (user.Name == "ahmed" && user.Verified));
             //var result = client.Query<User>(user => !user.Verified && user.Verified);
             //var result = client.Query<User>(x => !x.Verified);
 
