@@ -108,6 +108,11 @@ namespace Redis.SQL.Client
             return await QueryEntity<TEntity>(_lambdaExpressionTreeParser.ParseLambdaExpression(expr));
         }
 
+        public async Task<IEnumerable<TEntity>> Query<TEntity>()
+        {
+            return await QueryEntity<TEntity>(string.Empty);
+        }
+
         public async Task<IEnumerable<IDictionary<string, string>>> ExecuteSql(string sql)
         {
             sql = sql.Trim();
