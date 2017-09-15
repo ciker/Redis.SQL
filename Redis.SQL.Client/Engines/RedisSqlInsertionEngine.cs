@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using System.Threading.Tasks;
 using Redis.SQL.Client.Engines.Interfaces;
+using Redis.SQL.Client.Exceptions;
 using Redis.SQL.Client.RedisClients;
 using Redis.SQL.Client.RedisClients.Interfaces;
 
@@ -21,13 +22,32 @@ namespace Redis.SQL.Client.Engines
             _setClient = new RedisSetStorageClient();
         }
 
+        private async Task<bool> CheckEntityExistance(string entityName)
+        {
+            var mutex = Semaphores.GetEntitySemaphore(entityName);
+            await mutex.WaitAsync();
+
+            try
+            {
+                return await _setClient.SetContains(Constants.AllEntityNamesSetKeyName, entityName);
+            }
+            finally
+            {
+                mutex.Release();
+            }
+        }
+
         public async Task InsertEntity<TEntity>(TEntity entity)
         {
             var entityName = Helpers.GetTypeName<TEntity>();
             var identifier = Helpers.GenerateRandomString();
             var properties = Helpers.GetTypeProperties<TEntity>();
 
-            //CHECKS HERE
+            if (!await CheckEntityExistance(entityName))
+            {
+                throw new EntityNotFoundException(entityName);
+            }
+
             await _setClient.AddToSet(Helpers.GetEntityIdentifierCollectionKey(entityName), identifier);
             await _stringClient.StoreValue(Helpers.GetEntityStoreKey(entityName, identifier), entity);
 

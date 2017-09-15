@@ -19,7 +19,7 @@ namespace Redis.SQL.Client.Engines
             _stringClient = new RedisStringStorageClient();
         }
 
-        public async Task<bool> CreateEntity<TEntity>()
+        public async Task CreateEntity<TEntity>()
         {
             var entityName = Helpers.GetTypeName<TEntity>();
             var properties = Helpers.GetTypeProperties<TEntity>();
@@ -30,7 +30,7 @@ namespace Redis.SQL.Client.Engines
             {
                 if (await _setClient.SetContains(Constants.AllEntityNamesSetKeyName, entityName))
                 {
-                    return false;
+                    throw new EntityAlreadyExistsException(entityName);
                 }
 
                 foreach (var property in properties)
@@ -40,8 +40,6 @@ namespace Redis.SQL.Client.Engines
 
                 await _setClient.AddToSet(Constants.AllEntityNamesSetKeyName, entityName);
                 await _stringClient.StoreValue(Helpers.GetEntityCountKey(entityName), 0.ToString());
-
-                return true;
             }
             finally
             {

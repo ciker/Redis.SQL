@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Linq;
-using Redis.SQL.Client.Engines;
 
 namespace Redis.SQL.Client.Demo
 {
@@ -137,22 +134,18 @@ namespace Redis.SQL.Client.Demo
             };
 
             client.Create<User>();
-            client.Create<User>();
-            client.Create<User>();
-
-            //client.Add(u1);
-            //client.Add(u2);
-            //client.Add(u3);
-            //client.Add(u4);
-            //client.Add(u5);
-            //client.Add(u6);
-            //client.Add(u7);
-            //client.Add(u8);
-            //client.Add(u9);
+            client.Insert(u1);
+            client.Insert(u2);
+            client.Insert(u3);
+            client.Insert(u4);
+            client.Insert(u5);
+            client.Insert(u6);
+            client.Insert(u7);
+            client.Insert(u8);
+            client.Insert(u9);
 
             Console.ReadLine();
         }
-
     }
 
     public class User
