@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Redis.SQL.Client.Analyzer.Interfaces;
 using Redis.SQL.Client.Enums;
 using Redis.SQL.Client.Exceptions;
 using Redis.SQL.Client.Models;
 
 namespace Redis.SQL.Client.Analyzer
 {
-    internal class ProjectionalParser
+    internal class ProjectionalParser : IProjectionalParser
     {
-        internal ProjectionModel ParseSelectStatement(IList<string> tokens)
+        public ProjectionModel ParseSelectStatement(IList<string> tokens)
         {
             var model = new ProjectionModel
             {

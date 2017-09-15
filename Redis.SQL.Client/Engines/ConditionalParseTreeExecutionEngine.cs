@@ -9,7 +9,7 @@ namespace Redis.SQL.Client.Engines
 {
     internal partial class RedisSqlQueryEngine
     {
-        internal async Task<IEnumerable<string>> ExecuteTree(string entityName, BinaryTree<string> tree)
+        private async Task<IEnumerable<string>> ExecuteTree(string entityName, BinaryTree<string> tree)
         {
             while (!tree.IsLeaf())
             {

@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Redis.SQL.Client.Analyzer.Interfaces;
 using Redis.SQL.Client.Exceptions;
 
 namespace Redis.SQL.Client.Analyzer
 {
-    internal class ShiftReduceParser
+    internal class ShiftReduceParser : IShiftReduceParser
     {
         private readonly IEnumerable<GrammarRule> _grammar;
 
@@ -98,7 +99,7 @@ namespace Redis.SQL.Client.Analyzer
             return false;
         }
 
-        internal BinaryTree<string> ParseCondition(IEnumerable<string> tokens)
+        public BinaryTree<string> ParseCondition(IEnumerable<string> tokens)
         {
             if (!ParseTokens(tokens.ToList(), out var tree))
             {

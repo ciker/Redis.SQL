@@ -3,10 +3,11 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Redis.SQL.Client.Exceptions;
+using Redis.SQL.Client.ExpressionTrees.Interfaces;
 
-namespace Redis.SQL.Client.Engines
+namespace Redis.SQL.Client.ExpressionTrees
 {
-    internal class LambdaExpressionTreeParser
+    internal class LambdaExpressionTreeParser : ILambdaExpressionTreeParser
     {
         private static readonly Type BooleanType = typeof(bool);
 
@@ -38,7 +39,7 @@ namespace Redis.SQL.Client.Engines
             _variables = null;
         }
 
-        internal string ParseLambdaExpression<TEntity>(Expression<Func<TEntity, bool>> expr)
+        public string ParseLambdaExpression<TEntity>(Expression<Func<TEntity, bool>> expr)
         {
             lock (_locker)
             {

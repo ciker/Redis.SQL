@@ -1,18 +1,25 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Redis.SQL.Client.Analyzer;
+using Redis.SQL.Client.Analyzer.Interfaces;
+using Redis.SQL.Client.Analyzer.Lexers;
+using Redis.SQL.Client.Engines.Interfaces;
 using Redis.SQL.Client.Enums;
 using Redis.SQL.Client.RedisClients;
 using Redis.SQL.Client.RedisClients.Interfaces;
 
 namespace Redis.SQL.Client.Engines
 {
-    internal partial class RedisSqlQueryEngine
+    internal partial class RedisSqlQueryEngine : IQueryEngine
     {
         private readonly IRedisHashStorageClient _hashClient;
         private readonly IRedisStringStorageClient _stringClient;
         private readonly IRedisZSetStorageClient _zSetClient;
         private readonly IRedisSetStorageClient _setClient;
+        private readonly ILexer _conditionalTokenizer;
+        private readonly IShiftReduceParser _whereParser;
         private static readonly string[] Operators = {"<=", ">=", "<", ">", "!=", "="};
 
         internal RedisSqlQueryEngine()
@@ -21,14 +28,54 @@ namespace Redis.SQL.Client.Engines
             _stringClient = new RedisStringStorageClient();
             _zSetClient = new RedisZSetStorageClient();
             _setClient = new RedisSetStorageClient();
+            _conditionalTokenizer = new ConditionalLexicalTokenizer();
+            _whereParser = new ShiftReduceParser(Constants.WhereGrammar);
         }
 
-        internal async Task<string> RetrieveEntityJsonByKey(string entityName, string key)
+        public async Task<IEnumerable<TEntity>> QueryEntities<TEntity>(string condition)
+        {
+            var entityName = Helpers.GetTypeName<TEntity>();
+            var entities = await QueryKeys(entityName, condition);
+            return entities.Select(JsonConvert.DeserializeObject<TEntity>).ToList();
+        }
+
+        public async Task<IEnumerable<dynamic>> QueryEntities(string entityName, string condition)
+        {
+            var entities = await QueryKeys(entityName, condition);
+            return entities.Select(JsonConvert.DeserializeObject<dynamic>).ToList();
+        }
+
+        private async Task<IEnumerable<string>> QueryKeys(string entityName, string condition)
+        {
+            IEnumerable<string> keys;
+
+            if (string.IsNullOrEmpty(condition))
+            {
+                keys = await GetAllEntitykeys(entityName);
+            }
+            else
+            {
+                var tokens = _conditionalTokenizer.Tokenize(condition);
+                var parseTree = _whereParser.ParseCondition(tokens);
+                keys = await ExecuteTree(entityName, parseTree);
+            }
+
+            ICollection<string> result = new List<string>();
+
+            foreach (var key in keys)
+            {
+                result.Add(await RetrieveEntityJsonByKey(entityName, key));
+            }
+
+            return result;
+        }
+
+        private async Task<string> RetrieveEntityJsonByKey(string entityName, string key)
         {
             return await _stringClient.GetValue(Helpers.GetEntityStoreKey(entityName, key));
         }
 
-        internal async Task<IEnumerable<string>> GetAllEntitykeys(string entityName)
+        private async Task<IEnumerable<string>> GetAllEntitykeys(string entityName)
         {
             return await _setClient.GetSetMembers(Helpers.GetEntityIdentifierCollectionKey(entityName));
         }
