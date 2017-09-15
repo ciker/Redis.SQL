@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Redis.SQL.Client.RedisClients.Interfaces;
 using StackExchange.Redis;
@@ -10,10 +8,6 @@ namespace Redis.SQL.Client.RedisClients
     internal class RedisHashStorageClient : IRedisHashStorageClient
     {
         private readonly IDatabase _redisDatabase;
-
-        private static readonly IDictionary<string, SemaphoreSlim> MutexDictionary = new Dictionary<string, SemaphoreSlim>();
-
-        private static readonly object MutexDictionaryLock = new object();
 
         internal RedisHashStorageClient()
         {
@@ -38,7 +32,7 @@ namespace Redis.SQL.Client.RedisClients
 
         public async Task<bool> AppendStringToHashField(string hashSet, string key, string value)
         {
-            var mutex = GetMutex(hashSet, key);
+            var mutex = Semaphores.GetIndexSemaphore(hashSet, key);
             await mutex.WaitAsync();
 
             try
@@ -64,7 +58,7 @@ namespace Redis.SQL.Client.RedisClients
 
         public async Task<bool> RemoveStringFromHashField(string hashSet, string key, string value)
         {
-            var mutex = GetMutex(hashSet, key);
+            var mutex = Semaphores.GetIndexSemaphore(hashSet, key);
             await mutex.WaitAsync();
 
             try
@@ -81,18 +75,6 @@ namespace Redis.SQL.Client.RedisClients
             finally
             {
                 mutex.Release();
-            }
-        }
-
-        private static SemaphoreSlim GetMutex(string hashSet, string key)
-        {
-            lock (MutexDictionaryLock)
-            {
-                var lookupKey = hashSet.ToLower() + ":" + key.ToLower();
-                if (MutexDictionary.TryGetValue(lookupKey, out var mutex)) return mutex;
-                mutex = new SemaphoreSlim(1, 1);
-                MutexDictionary.Add(lookupKey, mutex);
-                return mutex;
             }
         }
     }

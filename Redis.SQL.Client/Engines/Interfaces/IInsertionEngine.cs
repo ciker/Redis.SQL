@@ -2,8 +2,8 @@
 
 namespace Redis.SQL.Client.Engines.Interfaces
 {
-    public interface ICreationEngine
+    internal interface IInsertionEngine
     {
-        Task<bool> CreateEntity<TEntity>();
+        Task InsertEntity<TEntity>(TEntity entity);
     }
 }

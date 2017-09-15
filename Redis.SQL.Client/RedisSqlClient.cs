@@ -17,6 +17,8 @@ namespace Redis.SQL.Client
 
         private readonly ICreationEngine _creationEngine;
 
+        private readonly IInsertionEngine _insertionEngine;
+
         private readonly IProjectionEngine _projectionEngine;
 
         private readonly ILambdaExpressionTreeParser _lambdaExpressionTreeParser;
@@ -27,6 +29,7 @@ namespace Redis.SQL.Client
             _creationEngine = new RedisSqlCreationEngine();
             _lambdaExpressionTreeParser = new LambdaExpressionTreeParser();
             _projectionEngine = new RedisSqlProjectionEngine();
+            _insertionEngine = new RedisSqlInsertionEngine();
         }
 
         public async Task<IEnumerable<TEntity>> Query<TEntity>(string condition)
@@ -44,15 +47,21 @@ namespace Redis.SQL.Client
             return await _queryEngine.QueryEntities<TEntity>(string.Empty);
         }
 
-        public async Task Add<TEntity>(TEntity entity)
+        public async Task Insert<TEntity>(TEntity entity)
         {
-            await _creationEngine.CreateEntity(entity);
+            await _insertionEngine.InsertEntity(entity);
+        }
+
+        public async Task Create<TEntity>()
+        {
+            await _creationEngine.CreateEntity<TEntity>();
         }
 
         public async Task<IEnumerable<IDictionary<string, string>>> ExecuteSql(string sql)
         {
             sql = sql.Trim();
             var selectKeyword = Keywords.Select.ToString();
+
             if (sql.StartsWith(selectKeyword.ToLower() + " ", StringComparison.OrdinalIgnoreCase))
             {
                 return await _projectionEngine.ExecuteSelectStatement(sql);

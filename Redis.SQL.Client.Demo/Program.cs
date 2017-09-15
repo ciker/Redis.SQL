@@ -22,11 +22,11 @@ namespace Redis.SQL.Client.Demo
             //var result2 = client.Query<User>(user => user.Class == classValue && user.StartTime == time);
             //var result = client.Query<User>(user => (user.Age == age && user.Name == name) || user.Created == creationDate);
 
-            var result = client.ExecuteSql("   SeLeCT user.name,  id, user.created, age, class    frOm user    whEre ( created > '9/15/2017 19:00')   ");
+            //var result = client.ExecuteSql("   SeLeCT user.name,  id, user.created, age, class    frOm user    whEre ( created > '9/15/2017 19:00')   ");
 
-            result.ContinueWith(x =>
-            {
-                var res = x.Result;
+            //result.ContinueWith(x =>
+            //{
+            //    var res = x.Result;
 
                 //foreach (var item in res)
                 //{
@@ -35,7 +35,7 @@ namespace Redis.SQL.Client.Demo
                 //        Console.WriteLine($"{prop.Key}: {prop.Value}");
                 //    }
                 //}
-            });
+            //});
 
             var u1 = new User
             {
@@ -135,6 +135,10 @@ namespace Redis.SQL.Client.Demo
                 Class = 'c',
                 Id = 12349131
             };
+
+            client.Create<User>();
+            client.Create<User>();
+            client.Create<User>();
 
             //client.Add(u1);
             //client.Add(u2);
