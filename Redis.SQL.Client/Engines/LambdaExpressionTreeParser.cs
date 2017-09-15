@@ -30,7 +30,13 @@ namespace Redis.SQL.Client.Engines
 
         private FieldInfo[] _variables;
 
-        private readonly object _locker = new object();
+        private readonly object _locker;
+
+        internal LambdaExpressionTreeParser()
+        {
+            _locker = new object();
+            _variables = null;
+        }
 
         internal string ParseLambdaExpression<TEntity>(Expression<Func<TEntity, bool>> expr)
         {
