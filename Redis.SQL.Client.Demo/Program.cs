@@ -18,7 +18,7 @@ namespace Redis.SQL.Client.Demo
             var time = TimeSpan.FromHours(3);
 
             //THESE TWO CASES ARE NOT WORKING
-            var result = client.Query<User>();
+            var result = client.Query<User>(x => x.Created == DateTime.UtcNow);
             //var result = client.Query<User>(user => user.Class == classValue && user.StartTime == time);
             //var result = client.Query<User>(user => (user.Age == age && user.Name == name) || user.Created == creationDate);
 

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -11,10 +10,6 @@ namespace Redis.SQL.Client.Engines
     {
         private static readonly Type BooleanType = typeof(bool);
 
-        private static readonly Type IntType = typeof(int);
-
-        private static readonly Type LongType = typeof(long);
-
         private static readonly Type CharType = typeof(char);
 
         private static readonly Type StringType = typeof(string);
@@ -22,16 +17,6 @@ namespace Redis.SQL.Client.Engines
         private static readonly Type DateTimeType = typeof(DateTime);
 
         private static readonly Type TimeSpanType = typeof(TimeSpan);
-
-        private static readonly IDictionary<Type, Func<MemberInfo, string>> PropertiesEvaluator = 
-            new Dictionary<Type, Func<MemberInfo, string>>
-            {
-                { DateTimeType, EvaluateDateTimeProperties },
-                { TimeSpanType, EvaluateTimeSpanProperties },
-                { IntType, EvaluateIntProperties },
-                { LongType, EvaluateLongProperties },
-                { StringType, EvaluateStringProperties }
-            };
 
         private static readonly ExpressionType[] Operators =
         {
@@ -175,82 +160,15 @@ namespace Redis.SQL.Client.Engines
             var memberInfo = member.Member;
             var declaringType = memberInfo.DeclaringType;
 
-            if (PropertiesEvaluator.TryGetValue(declaringType, out var method))
+            var property = declaringType.GetProperty(memberInfo.Name);
+
+            if (property == null)
             {
-                return method(memberInfo);
+                var field = declaringType.GetField(memberInfo.Name);
+                return $"'{field?.GetValue(null)}'";
             }
 
-            throw new LambdaExpressionParsingException();
-        }
-
-        private static string EvaluateDateTimeProperties(MemberInfo info)
-        {
-            switch (info.Name)
-            {
-                case "UtcNow":
-                    return $"'{DateTime.UtcNow}'";
-                case "Now":
-                    return $"'{DateTime.Now}'";
-                case "Today":
-                    return $"'{DateTime.Today}'";
-                case "MaxValue":
-                    return $"'{DateTime.MaxValue}'";
-                case "MinValue":
-                    return $"'{DateTime.MinValue}'";
-            }
-
-            throw new LambdaExpressionParsingException();
-        }
-
-        private static string EvaluateTimeSpanProperties(MemberInfo info)
-        {
-            switch (info.Name)
-            {
-                case "MaxValue":
-                    return $"'{TimeSpan.MaxValue}'";
-                case "MinValue":
-                    return $"'{TimeSpan.MinValue}'";
-                case "Zero":
-                    return $"'{TimeSpan.Zero}'";
-            }
-
-            throw new LambdaExpressionParsingException();
-        }
-
-        private static string EvaluateStringProperties(MemberInfo info)
-        {
-            switch (info.Name)
-            {
-                case "Empty": return "''";
-            }
-
-            throw new LambdaExpressionParsingException();
-        }
-
-        private static string EvaluateIntProperties(MemberInfo info)
-        {
-            switch (info.Name)
-            {
-                case "MaxValue":
-                    return $"'{int.MaxValue}'";
-                case "MinValue":
-                    return $"'{int.MinValue}'";
-            }
-
-            throw new LambdaExpressionParsingException();
-        }
-
-        private static string EvaluateLongProperties(MemberInfo info)
-        {
-            switch (info.Name)
-            {
-                case "MaxValue":
-                    return $"'{long.MaxValue}'";
-                case "MinValue":
-                    return $"'{long.MinValue}'";
-            }
-
-            throw new LambdaExpressionParsingException();
+            return $"'{property.GetValue(null)}'";
         }
     }
 }
