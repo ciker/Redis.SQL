@@ -43,7 +43,15 @@ namespace Redis.SQL.Client.Engines
             ExpressionType.NotEqual
         };
 
-        private static string ParseExpressionTree(string result, BinaryExpression bin)
+        private FieldInfo[] _variables;
+
+        internal string ParseLambdaExpression<TEntity>(Expression<Func<TEntity, bool>> expr)
+        {
+            _variables = null;
+            return ParseExpressionTree(string.Empty, ToBinary(expr.Body));
+        }
+
+        private string ParseExpressionTree(string result, BinaryExpression bin)
         {
             if (bin.NodeType == ExpressionType.OrElse || bin.NodeType == ExpressionType.Or)
             {
@@ -89,12 +97,7 @@ namespace Redis.SQL.Client.Engines
 
             throw new LambdaExpressionParsingException("Unsupported operator");
         }
-
-        internal string ParseLambdaExpression<TEntity>(Expression<Func<TEntity, bool>> expr)
-        {
-            return ParseExpressionTree(string.Empty, ToBinary(expr.Body));
-        }
-
+        
         private static BinaryExpression ToBinary(Expression expr)
         {
             if (expr is BinaryExpression bin) return bin;
@@ -119,7 +122,7 @@ namespace Redis.SQL.Client.Engines
             return Expression.Equal(boolParam, value);
         }
 
-        private static void ConvertNode(BinaryExpression bin, out string lhs, out string rhs)
+        private void ConvertNode(BinaryExpression bin, out string lhs, out string rhs)
         {
             var operand = (bin.Left as UnaryExpression)?.Operand;
 
@@ -127,9 +130,8 @@ namespace Redis.SQL.Client.Engines
             if (type == CharType)
             {
                 lhs = operand?.ToString();
-                if (bin.Right is UnaryExpression unary)
+                if (bin.Right is UnaryExpression unary && unary.Operand is MemberExpression member)
                 {
-                    var member = unary.Operand as MemberExpression;
                     EvaluateMember(member, bin, out rhs);
                     rhs = $"'{rhs}'";
                 }
@@ -142,8 +144,8 @@ namespace Redis.SQL.Client.Engines
 
             throw new LambdaExpressionParsingException();
         }
-
-        private static void EvaluateMember(MemberExpression member, BinaryExpression bin, out string rhs)
+        
+        private void EvaluateMember(MemberExpression member, BinaryExpression bin, out string rhs)
         {
             if (member.Expression == null)
             {
@@ -154,7 +156,12 @@ namespace Redis.SQL.Client.Engines
             var val = (member.Expression as ConstantExpression)?.Value;
             var variableName = member.Member?.Name;
 
-            rhs = val?.GetType().GetField(variableName).GetValue(val)?.ToString();
+            if (_variables == null)
+            {
+                _variables = val?.GetType().GetFields();
+            }
+
+            rhs = _variables?.FirstOrDefault(x => x.Name == variableName)?.GetValue(val)?.ToString();
             var leftBinType = bin.Left.Type;
 
             if (leftBinType == StringType || leftBinType == CharType || leftBinType == DateTimeType || leftBinType == TimeSpanType)
