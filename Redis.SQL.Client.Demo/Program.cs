@@ -11,21 +11,12 @@ namespace Redis.SQL.Client.Demo
         {
             var client = new RedisSqlClient();
 
-            //client.ExecuteWhere("user", @"name='john'");
-
-            //client.ExecuteWhere("user", @"((age> 28 and class = 'b' ) or name = 'ahmed') or id=12778899");
-
-            //var result = client.Query<User>(@"(name = 'ahmed' or (age> 28 and class = 'b' )) or id=12778899");
-
-            //var result = client.Execute<User>(@"(Created > '09/12/2017 21:40 pm' and class != 'a') or (id =12213822 and verified = true)");
-
-            var result = client.Query<User>(user => user.Class =='b'|| (user.Name == "ahmed" && user.Verified));
-            //var result = client.Query<User>(user => !user.Verified && user.Verified);
-            //var result = client.Query<User>(x => !x.Verified);
-
-            //var result = client.Query<User>(x => x.Created == DateTime.Now);
-
-            //var result = client.Query<User>(x => x.Verified);
+            var creationDate = DateTime.UtcNow;
+            var age = 25;
+            var classValue = 'b';
+            var name = "ahmed";
+            //var result = client.Query<User>(user => (user.Age == age && user.Class == classValue) || user.Created == creationDate);
+            var result = client.Query<User>(user => (user.Age == age && user.Name == "ahmed") || user.Created == creationDate);
 
             //var result = client.ExecuteSql("   SeLeCT user.name,  id, user.created, age, class    frOm user    whEre (age = 25  and class > 'b')   ");
 
@@ -41,12 +32,6 @@ namespace Redis.SQL.Client.Demo
                 //    }
                 //}
             });
-
-            //client.ExecuteWhere("user", @"Created > '1/30/1991'");
-            //client.ExecuteWhere("user", @"starttime>='13:00:00'");
-            //client.ExecuteWhere("user", @"Created > '1/30/1991 13:30:45'");
-
-            //client.ExecuteWhere("user", @"age > 101");
 
             var u1 = new User
             {
