@@ -30,10 +30,15 @@ namespace Redis.SQL.Client.Engines
 
         private FieldInfo[] _variables;
 
+        private readonly object _locker = new object();
+
         internal string ParseLambdaExpression<TEntity>(Expression<Func<TEntity, bool>> expr)
         {
-            _variables = null;
-            return ParseExpressionTree(string.Empty, ToBinary(expr.Body));
+            lock (_locker)
+            {
+                _variables = null;
+                return ParseExpressionTree(string.Empty, ToBinary(expr.Body));
+            }
         }
 
         private string ParseExpressionTree(string result, BinaryExpression bin)
