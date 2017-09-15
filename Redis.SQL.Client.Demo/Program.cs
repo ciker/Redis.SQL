@@ -15,8 +15,10 @@ namespace Redis.SQL.Client.Demo
             var age = 25;
             var classValue = 'b';
             var name = "ahmed";
-            //var result = client.Query<User>(user => (user.Age == age && user.Class == classValue) || user.Created == creationDate);
-            var result = client.Query<User>(user => (user.Age == age && user.Name == "ahmed") || user.Created == creationDate);
+
+            //THESE TWO CASES ARE NOT WORKING
+            var result = client.Query<User>(user => user.Created == creationDate);
+            //var result = client.Query<User>(user => (user.Age == age && user.Name == name) || user.Created == creationDate);
 
             //var result = client.ExecuteSql("   SeLeCT user.name,  id, user.created, age, class    frOm user    whEre (age = 25  and class > 'b')   ");
 

@@ -122,11 +122,21 @@ namespace Redis.SQL.Client.Engines
         private static void ConvertNode(BinaryExpression bin, out string lhs, out string rhs)
         {
             var operand = (bin.Left as UnaryExpression)?.Operand;
+
             var type = operand?.Type;
             if (type == CharType)
             {
                 lhs = operand?.ToString();
-                rhs = $"'{(char)int.Parse(bin.Right.ToString())}'";
+                if (bin.Right is UnaryExpression unary)
+                {
+                    var member = unary.Operand as MemberExpression;
+                    EvaluateMember(member, bin, out rhs);
+                    rhs = $"'{rhs}'";
+                }
+                else
+                {
+                    rhs = $"'{(char)int.Parse(bin.Right.ToString())}'";
+                }
                 return;
             }
 
@@ -142,8 +152,9 @@ namespace Redis.SQL.Client.Engines
             }
 
             var val = (member.Expression as ConstantExpression)?.Value;
+            var variableName = member.Member?.Name;
 
-            rhs = val?.GetType().GetFields()[0].GetValue(val)?.ToString();
+            rhs = val?.GetType().GetField(variableName).GetValue(val)?.ToString();
             var leftBinType = bin.Left.Type;
 
             if (leftBinType == StringType || leftBinType == CharType || leftBinType == DateTimeType || leftBinType == TimeSpanType)
