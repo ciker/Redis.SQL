@@ -1,11 +1,12 @@
 ﻿using System.Reflection;
 using System.Threading.Tasks;
+using Redis.SQL.Client.Engines.Interfaces;
 using Redis.SQL.Client.RedisClients;
 using Redis.SQL.Client.RedisClients.Interfaces;
 
 namespace Redis.SQL.Client.Engines
 {
-    internal class RedisSqlCreationEngine
+    internal class RedisSqlCreationEngine : ICreationEngine
     {
         private readonly IRedisHashStorageClient _hashClient;
         private readonly IRedisStringStorageClient _stringClient;
@@ -20,7 +21,7 @@ namespace Redis.SQL.Client.Engines
             _setClient = new RedisSetStorageClient();
         }
 
-        internal async Task CreateEntity<TEntity>(TEntity entity) where TEntity : class
+        public async Task CreateEntity<TEntity>(TEntity entity)
         {
             var entityName = Helpers.GetTypeName<TEntity>();
             var identifier = Helpers.GenerateRandomString();
@@ -35,7 +36,7 @@ namespace Redis.SQL.Client.Engines
                 var propertyValue = GetPropertyValue(property, entity);
                 var encodedPropertyValue = Helpers.EncodePropertyValue(propertyTypeName, propertyValue.ToString()).ToLower();
                 var propertyScore = Helpers.GetPropertyScore(propertyTypeName, encodedPropertyValue);
-                await _hashClient.SetHashField(Helpers.GetEntityPropertyTypesKey(entityName), property.Name, property.PropertyType.Name);
+                await _hashClient.SetHashField(Helpers.GetEntityPropertyTypesKey(entityName), property.Name, property.PropertyType.Name.ToLower());
                 await _hashClient.AppendStringToHashField(Helpers.GetEntityIndexKey(entityName, property.Name), encodedPropertyValue, identifier);
                 await _zSetClient.AddToSortedSet(Helpers.GetPropertyCollectionKey(entityName, property.Name), encodedPropertyValue, propertyScore ?? 0D);
             }

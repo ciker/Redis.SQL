@@ -11,18 +11,18 @@ namespace Redis.SQL.Client.Demo
         {
             var client = new RedisSqlClient();
 
-            var creationDate = DateTime.UtcNow;
-            var age = 25;
-            var classValue = 'b';
-            var name = "ahmed";
-            var time = TimeSpan.FromHours(3);
+            //var creationDate = DateTime.UtcNow;
+            //var age = 25;
+            //var classValue = 'b';
+            //var name = "ahmed";
+            //var time = TimeSpan.FromHours(3);
 
             //THESE TWO CASES ARE NOT WORKING
             //var result = client.Query<User>(x => x.StartTime == TimeSpan.Zero);
             //var result2 = client.Query<User>(user => user.Class == classValue && user.StartTime == time);
             //var result = client.Query<User>(user => (user.Age == age && user.Name == name) || user.Created == creationDate);
 
-            var result = client.ExecuteSql("   SeLeCT user.name,  id, user.created, age, class    frOm user    whEre (age = 25  and class > 'b')   ");
+            var result = client.ExecuteSql("   SeLeCT user.name,  id, user.created, age, class    frOm user    whEre ( created > '9/15/2017 19:00')   ");
 
             result.ContinueWith(x =>
             {
@@ -136,17 +136,15 @@ namespace Redis.SQL.Client.Demo
                 Id = 12349131
             };
 
-            //var engine = new RedisSqlCreationEngine();
-            //engine.CreateEntity(u1);
-            //engine.CreateEntity(u2);
-            //engine.CreateEntity(u3);
-            //engine.CreateEntity(u4);
-            //engine.CreateEntity(u5);
-            //engine.CreateEntity(u6);
-            //engine.CreateEntity(u7);
-            //engine.CreateEntity(u8);
-            //engine.CreateEntity(u9);
-
+            //client.Add(u1);
+            //client.Add(u2);
+            //client.Add(u3);
+            //client.Add(u4);
+            //client.Add(u5);
+            //client.Add(u6);
+            //client.Add(u7);
+            //client.Add(u8);
+            //client.Add(u9);
 
             Console.ReadLine();
         }

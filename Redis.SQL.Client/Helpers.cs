@@ -33,7 +33,7 @@ namespace Redis.SQL.Client
 
         internal static string EncodePropertyValue(string propertyTypeName, string value)
         {
-            if (propertyTypeName == TypeNames.DateTime.ToString())
+            if (string.Equals(propertyTypeName, TypeNames.DateTime.ToString(), StringComparison.OrdinalIgnoreCase))
             {
                 if (DateTime.TryParse(value, new CultureInfo("en-US"), DateTimeStyles.None, out var parsed))
                 {
@@ -43,7 +43,7 @@ namespace Redis.SQL.Client
                 goto Error;
             }
 
-            if (propertyTypeName == TypeNames.TimeSpan.ToString())
+            if (string.Equals(propertyTypeName, TypeNames.TimeSpan.ToString(), StringComparison.OrdinalIgnoreCase))
             {
                 if (TimeSpan.TryParse(value, out var parsed))
                 {
@@ -53,7 +53,7 @@ namespace Redis.SQL.Client
                 goto Error;
             }
 
-            if (propertyTypeName == TypeNames.Boolean.ToString())
+            if (string.Equals(propertyTypeName, TypeNames.Boolean.ToString(), StringComparison.OrdinalIgnoreCase))
             {
                 switch (value.Trim())
                 {
@@ -75,7 +75,8 @@ namespace Redis.SQL.Client
 
         internal static double? GetPropertyScore(string propertyTypeName, string encodedPropertyValue)
         {
-            if (propertyTypeName == TypeNames.String.ToString() || propertyTypeName == TypeNames.Char.ToString())
+            if (string.Equals(propertyTypeName, TypeNames.String.ToString(), StringComparison.OrdinalIgnoreCase) 
+                || string.Equals(propertyTypeName, TypeNames.Char.ToString(), StringComparison.OrdinalIgnoreCase))
             {
                 return null;
             }

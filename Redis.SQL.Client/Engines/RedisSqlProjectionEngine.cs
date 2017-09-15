@@ -9,7 +9,7 @@ using Redis.SQL.Client.Engines.Interfaces;
 
 namespace Redis.SQL.Client.Engines
 {
-    public class RedisSqlProjectionEngine : IProjectionEngine
+    internal class RedisSqlProjectionEngine : IProjectionEngine
     {
         private readonly ILexer _projectionalTokenizer;
 
