@@ -70,6 +70,8 @@ namespace Redis.SQL.Client
 
             if (sql.StartsWith($"{createKeyword.ToLower()} ", StringComparison.OrdinalIgnoreCase))
             {
+                await _creationEngine.ExecuteCreateStatement(sql);
+                return new List<IDictionary<string, string>>();
             }
 
             throw new SyntacticErrorException(sql);

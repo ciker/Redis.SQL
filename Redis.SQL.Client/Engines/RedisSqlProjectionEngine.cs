@@ -6,6 +6,7 @@ using Redis.SQL.Client.Analyzer.Interfaces;
 using Redis.SQL.Client.Analyzer.Lexers;
 using Redis.SQL.Client.Analyzer.Parsers;
 using Redis.SQL.Client.Engines.Interfaces;
+using Redis.SQL.Client.Models;
 
 namespace Redis.SQL.Client.Engines
 {
@@ -13,7 +14,7 @@ namespace Redis.SQL.Client.Engines
     {
         private readonly ILexer _projectionalTokenizer;
 
-        private readonly IProjectionalParser _projectionalParser;
+        private readonly ICustomizedParser _projectionalParser;
 
         private readonly IQueryEngine _queryEngine;
 
@@ -27,7 +28,7 @@ namespace Redis.SQL.Client.Engines
         public async Task<IEnumerable<IDictionary<string, string>>> ExecuteSelectStatement(string selectStatement)
         {
             var tokens = _projectionalTokenizer.Tokenize(selectStatement).ToList();
-            var projectionalModel = _projectionalParser.ParseSelectStatement(tokens);
+            var projectionalModel = (ProjectionModel)_projectionalParser.ParseTokens(tokens);
             var queryResult = await _queryEngine.QueryEntities(projectionalModel.EntityName, projectionalModel.Query);
             var result = new List<IDictionary<string, string>>();
             foreach (var item in queryResult)

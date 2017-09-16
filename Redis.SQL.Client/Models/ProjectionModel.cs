@@ -2,7 +2,7 @@
 
 namespace Redis.SQL.Client.Models
 {
-    internal class ProjectionModel
+    internal class ProjectionModel : BaseModel
     {
         internal string Query { get; set; }
         internal ICollection<string> ProjectedProperties { get; set; }

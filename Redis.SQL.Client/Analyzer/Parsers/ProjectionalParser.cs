@@ -8,9 +8,9 @@ using Redis.SQL.Client.Models;
 
 namespace Redis.SQL.Client.Analyzer.Parsers
 {
-    internal class ProjectionalParser : IProjectionalParser
+    internal class ProjectionalParser : ICustomizedParser
     {
-        public ProjectionModel ParseSelectStatement(IList<string> tokens)
+        public BaseModel ParseTokens(IList<string> tokens)
         {
             var model = new ProjectionModel
             {
@@ -21,7 +21,7 @@ namespace Redis.SQL.Client.Analyzer.Parsers
 
             tokens.RemoveAt(0);
 
-            while (tokens.Any())
+            while (tokens.Count > 0)
             {
                 var token = tokens[0];
                 if (!fromKeywordParsed && string.Equals(token, Keywords.From.ToString(), StringComparison.OrdinalIgnoreCase))

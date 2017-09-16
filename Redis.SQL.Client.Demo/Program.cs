@@ -14,24 +14,24 @@ namespace Redis.SQL.Client.Demo
             //var name = "ahmed";
             //var time = TimeSpan.FromHours(3);
 
-            //THESE TWO CASES ARE NOT WORKING
             //var result = client.Query<User>(x => x.StartTime == TimeSpan.Zero);
             //var result2 = client.Query<User>(user => user.Class == classValue && user.StartTime == time);
             //var result = client.Query<User>(user => (user.Age == age && user.Name == name) || user.Created == creationDate);
 
             //var result = client.ExecuteSql("   SeLeCT user.name,  id, user.created, age, class    frOm user    whEre ( created > '9/15/2017 19:00')   ");
+            var result = client.ExecuteSql("   CreAte user (   NAME    :    STRING,   age:int32,  created:datetime,starttime:timespan,verified:boolean,     class:char,  id:int64)  ");
 
             //result.ContinueWith(x =>
             //{
             //    var res = x.Result;
 
-                //foreach (var item in res)
-                //{
-                //    foreach (var prop in item)
-                //    {
-                //        Console.WriteLine($"{prop.Key}: {prop.Value}");
-                //    }
-                //}
+            //    foreach (var item in res)
+            //    {
+            //        foreach (var prop in item)
+            //        {
+            //            Console.WriteLine($"{prop.Key}: {prop.Value}");
+            //        }
+            //    }
             //});
 
             var u1 = new User
@@ -133,16 +133,16 @@ namespace Redis.SQL.Client.Demo
                 Id = 12349131
             };
 
-            client.Create<User>();
-            client.Insert(u1);
-            client.Insert(u2);
-            client.Insert(u3);
-            client.Insert(u4);
-            client.Insert(u5);
-            client.Insert(u6);
-            client.Insert(u7);
-            client.Insert(u8);
-            client.Insert(u9);
+            //client.Create<User>();
+            //client.Insert(u1);
+            //client.Insert(u2);
+            //client.Insert(u3);
+            //client.Insert(u4);
+            //client.Insert(u5);
+            //client.Insert(u6);
+            //client.Insert(u7);
+            //client.Insert(u8);
+            //client.Insert(u9);
 
             Console.ReadLine();
         }

@@ -30,6 +30,7 @@ namespace Redis.SQL.Client.Analyzer.Lexers
                 {
                     var pattern = statement[i] == '(' ? Constants.EntityNamePattern : Constants.EntityDesignPattern;
                     token = AddToken(token, pattern, tokens);
+                    continue;
                 }
 
                 token += statement[i];

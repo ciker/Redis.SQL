@@ -2,7 +2,7 @@
 
 namespace Redis.SQL.Client.Models
 {
-    internal class CreationModel
+    internal class CreationModel : BaseModel
     {
         internal string EntityName { get; set; }
 
