@@ -18,23 +18,23 @@ namespace Redis.SQL.Client.Demo
             //var result2 = client.Query<User>(user => user.Class == classValue && user.StartTime == time);
             //var result = client.Query<User>(user => (user.Age == age && user.Name == name) || user.Created == creationDate);
 
-            //var result = client.ExecuteSql("   SeLeCT user.id    frOm  user    whEre(id=12201181 or( class='b' and age  <  28)  ) ");
+            var result = client.ExecuteSql("   SeLeCT user.id, name    frOm  user    whEre(id=12201181 or( class='c' and age  <  28)  ) ");
             //var result = client.ExecuteSql("  CreAte user(NAME    :    STRING,   age:int32,  created:datetime,starttime:timespan,verified:boolean,     class:char,  id:int64  )  ");
-            var result = client.ExecuteSql("  insert   user   (name,    age,created,starttime,    verified ,  class , id) values('TEST3'  , 25, '12/26/2017 10:00', '09:30:00'   , false, 'c', 1202100)  ");
+            //var result = client.ExecuteSql("  insert   user   (name,    age,created,starttime,    verified ,  class , id) values('Test Insert1'  , 25, '12/26/2017 10:00', '09:30:00'   , false, 'c', 1202100)  ");
 
-            //var result = client.Query<User>();
-            //result.ContinueWith(x =>
-            //{
-            //    var res = x.Result;
+            //var result = client.Query<User>(x => x.Age == 25 || x.Id == 12999831);
+            result.ContinueWith(x =>
+            {
+                var res = x.Result;
 
-            //    foreach (var item in res)
-            //    {
-            //        foreach (var prop in item)
-            //        {
-            //            Console.WriteLine($"{prop.Key}: {prop.Value}");
-            //        }
-            //    }
-            //});
+                //foreach (var item in res)
+                //{
+                //    foreach (var prop in item)
+                //    {
+                //        Console.WriteLine($"{prop.Key}: {prop.Value}");
+                //    }
+                //}
+            });
 
             var u1 = new User
             {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -54,14 +55,15 @@ namespace Redis.SQL.Client.Engines
             foreach (var property in properties)
             {
                 var propertyTypeName = GetPropertyTypeName(property);
-                var propertyValue = GetPropertyValue(property, entity);
+                var propertyValue = GetPropertyValue(property, entity).ToString();
                 await AddPropertyToStore(entityName, identifier, propertyTypeName, property.Name, propertyValue);
             }
         }
-
-        private async Task AddPropertyToStore(string entityName, string identifier, string propertyTypeName, string propertyName, object propertyValue)
+        
+        private async Task AddPropertyToStore(string entityName, string identifier, string propertyTypeName, string propertyName, string propertyValue)
         {
-            var encodedPropertyValue = Helpers.EncodePropertyValue(propertyTypeName, propertyValue.ToString()).ToLower();
+            VerifyValueType(propertyTypeName, propertyValue);
+            var encodedPropertyValue = Helpers.EncodePropertyValue(propertyTypeName, propertyValue).ToLower();
             var propertyScore = Helpers.GetPropertyScore(propertyTypeName, encodedPropertyValue);
             await _hashClient.AppendStringToHashField(Helpers.GetEntityIndexKey(entityName, propertyName), encodedPropertyValue, identifier);
             await _zSetClient.AddToSortedSet(Helpers.GetPropertyCollectionKey(entityName, propertyName), encodedPropertyValue, propertyScore ?? 0D);
@@ -118,6 +120,33 @@ namespace Redis.SQL.Client.Engines
             finally
             {
                 mutex.Release();
+            }
+        }
+
+        private static void VerifyValueType(string propertyType, string value)
+        {
+            if (Enum.TryParse(propertyType, true, out TypeNames type))
+            {
+                switch (type)
+                {
+                    case TypeNames.DateTime when !DateTime.TryParse(value, new CultureInfo("en-US"), DateTimeStyles.None, out var _):
+                        throw new IncompatibleTypesException(TypeNames.DateTime.ToString(), value);
+
+                    case TypeNames.Boolean when !bool.TryParse(value, out var _):
+                        throw new IncompatibleTypesException(TypeNames.Boolean.ToString(), value);
+
+                    case TypeNames.TimeSpan when !TimeSpan.TryParse(value, out var _):
+                        throw new IncompatibleTypesException(TypeNames.TimeSpan.ToString(), value);
+
+                    case TypeNames.Int32 when !int.TryParse(value, out var _):
+                        throw new IncompatibleTypesException(TypeNames.Int32.ToString(), value);
+
+                    case TypeNames.Int64 when !long.TryParse(value, out var _):
+                        throw new IncompatibleTypesException(TypeNames.Int64.ToString(), value);
+
+                    case TypeNames.Char when !char.TryParse(value, out var _):
+                        throw new IncompatibleTypesException(TypeNames.Char.ToString(), value);
+                }
             }
         }
 
