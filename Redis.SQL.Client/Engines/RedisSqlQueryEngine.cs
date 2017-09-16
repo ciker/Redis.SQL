@@ -2,9 +2,9 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using Redis.SQL.Client.Analyzer;
 using Redis.SQL.Client.Analyzer.Interfaces;
 using Redis.SQL.Client.Analyzer.Lexers;
+using Redis.SQL.Client.Analyzer.Parsers;
 using Redis.SQL.Client.Engines.Interfaces;
 using Redis.SQL.Client.Enums;
 using Redis.SQL.Client.RedisClients;

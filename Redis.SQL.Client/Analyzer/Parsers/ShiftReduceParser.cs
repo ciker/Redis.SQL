@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 using Redis.SQL.Client.Analyzer.Interfaces;
 using Redis.SQL.Client.Exceptions;
 
-namespace Redis.SQL.Client.Analyzer
+namespace Redis.SQL.Client.Analyzer.Parsers
 {
     internal class ShiftReduceParser : IShiftReduceParser
     {

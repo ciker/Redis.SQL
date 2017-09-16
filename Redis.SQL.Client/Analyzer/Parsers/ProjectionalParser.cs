@@ -6,7 +6,7 @@ using Redis.SQL.Client.Enums;
 using Redis.SQL.Client.Exceptions;
 using Redis.SQL.Client.Models;
 
-namespace Redis.SQL.Client.Analyzer
+namespace Redis.SQL.Client.Analyzer.Parsers
 {
     internal class ProjectionalParser : IProjectionalParser
     {

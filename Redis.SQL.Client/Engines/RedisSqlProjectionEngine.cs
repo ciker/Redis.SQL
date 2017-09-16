@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Redis.SQL.Client.Analyzer;
 using Redis.SQL.Client.Analyzer.Interfaces;
 using Redis.SQL.Client.Analyzer.Lexers;
+using Redis.SQL.Client.Analyzer.Parsers;
 using Redis.SQL.Client.Engines.Interfaces;
 
 namespace Redis.SQL.Client.Engines
