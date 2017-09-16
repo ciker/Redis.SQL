@@ -1,13 +1,13 @@
-﻿using System.Collections.Generic;
-using System.Dynamic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Redis.SQL.Client.Analyzer.Interfaces;
 using Redis.SQL.Client.Analyzer.Lexers;
 using Redis.SQL.Client.Analyzer.Parsers;
 using Redis.SQL.Client.Engines.Interfaces;
+using Redis.SQL.Client.Enums;
 using Redis.SQL.Client.Exceptions;
 using Redis.SQL.Client.Models;
 using Redis.SQL.Client.RedisClients;
@@ -39,18 +39,8 @@ namespace Redis.SQL.Client.Engines
             var tokens = _insertionLexer.Tokenize(statement).ToList();
             var model = (InsertionModel)_insertionParser.ParseTokens(tokens);
             var identifier = Helpers.GenerateRandomString();
-
-            if (!await CheckEntityExistance(model.EntityName))
-            {
-                throw new EntityNotFoundException(model.EntityName);
-            }
-
-            await _setClient.AddToSet(Helpers.GetEntityIdentifierCollectionKey(model.EntityName), identifier);
-
-
-            var json = JsonConvert.SerializeObject(model.PropertyValues, Formatting.Indented);
-
-            await _stringClient.StoreValue(Helpers.GetEntityStoreKey(model.EntityName, identifier), json);
+            var entity = await EncodeEntity(model.EntityName, identifier, model.PropertyValues);
+            await AddEntityToStore(model.EntityName, identifier, entity);
         }
         
         public async Task InsertEntity<TEntity>(TEntity entity)
@@ -59,35 +49,71 @@ namespace Redis.SQL.Client.Engines
             var identifier = Helpers.GenerateRandomString();
             var properties = Helpers.GetTypeProperties<TEntity>();
 
-            if (!await CheckEntityExistance(entityName))
-            {
-                throw new EntityNotFoundException(entityName);
-            }
-
-            await _setClient.AddToSet(Helpers.GetEntityIdentifierCollectionKey(entityName), identifier);
-            await _stringClient.StoreValue(Helpers.GetEntityStoreKey(entityName, identifier), entity);
+            await AddEntityToStore(entityName, identifier, entity);
 
             foreach (var property in properties)
             {
                 var propertyTypeName = GetPropertyTypeName(property);
                 var propertyValue = GetPropertyValue(property, entity);
-                var encodedPropertyValue = Helpers.EncodePropertyValue(propertyTypeName, propertyValue.ToString()).ToLower();
-                var propertyScore = Helpers.GetPropertyScore(propertyTypeName, encodedPropertyValue);
-                await _hashClient.AppendStringToHashField(Helpers.GetEntityIndexKey(entityName, property.Name), encodedPropertyValue, identifier);
-                await _zSetClient.AddToSortedSet(Helpers.GetPropertyCollectionKey(entityName, property.Name), encodedPropertyValue, propertyScore ?? 0D);
+                await AddPropertyToStore(entityName, identifier, propertyTypeName, property.Name, propertyValue);
             }
+        }
 
+        private async Task AddPropertyToStore(string entityName, string identifier, string propertyTypeName, string propertyName, object propertyValue)
+        {
+            var encodedPropertyValue = Helpers.EncodePropertyValue(propertyTypeName, propertyValue.ToString()).ToLower();
+            var propertyScore = Helpers.GetPropertyScore(propertyTypeName, encodedPropertyValue);
+            await _hashClient.AppendStringToHashField(Helpers.GetEntityIndexKey(entityName, propertyName), encodedPropertyValue, identifier);
+            await _zSetClient.AddToSortedSet(Helpers.GetPropertyCollectionKey(entityName, propertyName), encodedPropertyValue, propertyScore ?? 0D);
+        }
+
+        private async Task AddEntityToStore<TEntity>(string entityName, string identifier, TEntity entity)
+        {
+            await CheckEntityExistance(entityName);
+            await _setClient.AddToSet(Helpers.GetEntityIdentifierCollectionKey(entityName), identifier);
+            await _stringClient.StoreValue(Helpers.GetEntityStoreKey(entityName, identifier), entity);
             await _stringClient.IncrementValue(Helpers.GetEntityCountKey(entityName));
         }
 
-        private async Task<bool> CheckEntityExistance(string entityName)
+        private async Task<string> EncodeEntity(string entityName, string identifier, IDictionary<string, string> propertyValues)
+        {
+            var entity = string.Empty;
+            foreach (var item in propertyValues)
+            {
+                var propertyType = await _hashClient.GetHashField(Helpers.GetEntityPropertyTypesKey(entityName), item.Key.ToLower());
+                var value = item.Value;
+
+                await AddPropertyToStore(entityName, identifier, propertyType, item.Key, item.Value);
+
+                if (Enum.TryParse(propertyType, true, out TypeNames type))
+                {
+                    if (type == TypeNames.Char || type == TypeNames.DateTime || type == TypeNames.String || type == TypeNames.TimeSpan)
+                    {
+                        value = $"\"{item.Value}\"";
+                    }
+                }
+                else
+                {
+                    throw new UnsupportedTypeException(propertyType);
+                }
+
+                entity += $"  \"{item.Key}\": {value}, {Environment.NewLine}";
+            }
+
+            return "{" + Environment.NewLine + entity + "}";
+        }
+
+        private async Task CheckEntityExistance(string entityName)
         {
             var mutex = Semaphores.GetEntitySemaphore(entityName);
             await mutex.WaitAsync();
 
             try
             {
-                return await _setClient.SetContains(Constants.AllEntityNamesSetKeyName, entityName);
+                if (!await _setClient.SetContains(Constants.AllEntityNamesSetKeyName, entityName))
+                {
+                    throw new EntityNotFoundException(entityName);
+                }
             }
             finally
             {
