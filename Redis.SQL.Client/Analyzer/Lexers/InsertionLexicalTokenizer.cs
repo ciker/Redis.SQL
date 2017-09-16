@@ -16,14 +16,14 @@ namespace Redis.SQL.Client.Analyzer.Lexers
             {
                 if (!values && statement[i] == ' ') continue;
 
-                if (statement.Substring(i).StartsWithKeyword(valuesKeyword))
+                if (statement.Substring(i).StartsWithKeyword(insertKeyword, ' '))
                 {
                     i += insertKeyword.Length - 1;
                     token = tokens.AddLexicalToken(insertKeyword, string.Empty);
                     continue;
                 }
 
-                if (statement.Substring(i).StartsWithKeyword(valuesKeyword))
+                if (statement.Substring(i).StartsWithKeyword(valuesKeyword, ' ', '('))
                 {
                     values = true;
                     i += valuesKeyword.Length - 1;
@@ -33,7 +33,7 @@ namespace Redis.SQL.Client.Analyzer.Lexers
 
                 if (statement[i] == '(' || statement[i] == ',' || statement[i] == ')')
                 {
-                    var pattern = values ? Constants.EntityNamePattern : Constants.PropertyValuePattern;
+                    var pattern = values ? Constants.PropertyValuePattern : Constants.EntityNamePattern;
                     token = tokens.AddLexicalToken(token, pattern);
                     continue;
                 }

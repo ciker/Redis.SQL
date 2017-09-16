@@ -65,20 +65,20 @@ namespace Redis.SQL.Client
             var createKeyword = Keywords.Create.ToString();
             var insertKeyword = Keywords.Insert.ToString();
 
-            if (sql.StartsWithKeyword(selectKeyword))
+            if (sql.StartsWithKeyword(selectKeyword, ' ', '*'))
             {
                 return await _projectionEngine.ExecuteSelectStatement(sql);
             }
             
-            if (sql.StartsWithKeyword(createKeyword))
+            if (sql.StartsWithKeyword(createKeyword, ' '))
             {
                 await _creationEngine.ExecuteCreateStatement(sql);
                 goto ReturnEmpty;
             }
 
-            if (sql.StartsWithKeyword(insertKeyword))
+            if (sql.StartsWithKeyword(insertKeyword, ' '))
             {
-
+                await _insertionEngine.ExecuteInsertStatement(sql);
                 goto ReturnEmpty;
             }
 

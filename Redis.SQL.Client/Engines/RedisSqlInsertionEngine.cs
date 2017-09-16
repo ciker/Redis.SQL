@@ -1,7 +1,15 @@
-﻿using System.Reflection;
+﻿using System.Collections.Generic;
+using System.Dynamic;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Redis.SQL.Client.Analyzer.Interfaces;
+using Redis.SQL.Client.Analyzer.Lexers;
+using Redis.SQL.Client.Analyzer.Parsers;
 using Redis.SQL.Client.Engines.Interfaces;
 using Redis.SQL.Client.Exceptions;
+using Redis.SQL.Client.Models;
 using Redis.SQL.Client.RedisClients;
 using Redis.SQL.Client.RedisClients.Interfaces;
 
@@ -13,6 +21,8 @@ namespace Redis.SQL.Client.Engines
         private readonly IRedisZSetStorageClient _zSetClient;
         private readonly IRedisHashStorageClient _hashClient;
         private readonly IRedisSetStorageClient _setClient;
+        private readonly ILexer _insertionLexer;
+        private readonly ICustomizedParser _insertionParser;
 
         internal RedisSqlInsertionEngine()
         {
@@ -20,28 +30,29 @@ namespace Redis.SQL.Client.Engines
             _stringClient = new RedisStringStorageClient();
             _zSetClient = new RedisZSetStorageClient();
             _setClient = new RedisSetStorageClient();
+            _insertionLexer = new InsertionLexicalTokenizer();
+            _insertionParser = new InsertionParser();
         }
 
-        public Task ExecuteInsertStatement(string statement)
+        public async Task ExecuteInsertStatement(string statement)
         {
-            return null;
-        }
+            var tokens = _insertionLexer.Tokenize(statement).ToList();
+            var model = (InsertionModel)_insertionParser.ParseTokens(tokens);
+            var identifier = Helpers.GenerateRandomString();
 
-        private async Task<bool> CheckEntityExistance(string entityName)
-        {
-            var mutex = Semaphores.GetEntitySemaphore(entityName);
-            await mutex.WaitAsync();
-
-            try
+            if (!await CheckEntityExistance(model.EntityName))
             {
-                return await _setClient.SetContains(Constants.AllEntityNamesSetKeyName, entityName);
+                throw new EntityNotFoundException(model.EntityName);
             }
-            finally
-            {
-                mutex.Release();
-            }
-        }
 
+            await _setClient.AddToSet(Helpers.GetEntityIdentifierCollectionKey(model.EntityName), identifier);
+
+
+            var json = JsonConvert.SerializeObject(model.PropertyValues, Formatting.Indented);
+
+            await _stringClient.StoreValue(Helpers.GetEntityStoreKey(model.EntityName, identifier), json);
+        }
+        
         public async Task InsertEntity<TEntity>(TEntity entity)
         {
             var entityName = Helpers.GetTypeName<TEntity>();
@@ -67,6 +78,21 @@ namespace Redis.SQL.Client.Engines
             }
 
             await _stringClient.IncrementValue(Helpers.GetEntityCountKey(entityName));
+        }
+
+        private async Task<bool> CheckEntityExistance(string entityName)
+        {
+            var mutex = Semaphores.GetEntitySemaphore(entityName);
+            await mutex.WaitAsync();
+
+            try
+            {
+                return await _setClient.SetContains(Constants.AllEntityNamesSetKeyName, entityName);
+            }
+            finally
+            {
+                mutex.Release();
+            }
         }
 
         private static string GetPropertyTypeName(PropertyInfo property) => property.PropertyType.Name;

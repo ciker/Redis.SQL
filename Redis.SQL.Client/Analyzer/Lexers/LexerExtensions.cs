@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Redis.SQL.Client.Exceptions;
 
@@ -20,9 +21,9 @@ namespace Redis.SQL.Client.Analyzer.Lexers
             return string.Empty;
         }
 
-        internal static bool StartsWithKeyword(this string statement, string keyword)
+        internal static bool StartsWithKeyword(this string statement, string keyword, params char[] separators)
         {
-            return statement.StartsWith($"{keyword} ", StringComparison.OrdinalIgnoreCase);
+            return separators.Any(separator => statement.StartsWith($"{keyword}{separator}", StringComparison.OrdinalIgnoreCase));
         }
     }
 }

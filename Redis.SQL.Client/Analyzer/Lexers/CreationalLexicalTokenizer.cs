@@ -18,7 +18,7 @@ namespace Redis.SQL.Client.Analyzer.Lexers
             {
                 if (statement[i] == ' ') continue;
 
-                if (statement.Substring(i).StartsWithKeyword(createKeyword))
+                if (statement.Substring(i).StartsWithKeyword(createKeyword, ' '))
                 {
                     i += createKeyword.Length - 1;
                     tokens.AddLexicalToken(createKeyword, string.Empty);

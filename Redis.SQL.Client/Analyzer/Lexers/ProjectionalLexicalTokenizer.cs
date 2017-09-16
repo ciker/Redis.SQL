@@ -18,14 +18,14 @@ namespace Redis.SQL.Client.Analyzer.Lexers
             {
                 if (statement[i] == ' ') continue;
 
-                if (statement.Substring(i).StartsWithKeyword(selectKeyword))
+                if (statement.Substring(i).StartsWithKeyword(selectKeyword, ' ', '*'))
                 {
                     i += selectKeyword.Length - 1;
                     result.AddLexicalToken(selectKeyword, string.Empty);
                     continue;
                 }
 
-                if (statement.Substring(i).StartsWithKeyword(fromKeyword))
+                if (statement.Substring(i).StartsWithKeyword(fromKeyword, ' '))
                 {
                     i += fromKeyword.Length - 1;
                     token = result.AddLexicalToken(token, Constants.ProjectionTokenPattern);
@@ -33,7 +33,7 @@ namespace Redis.SQL.Client.Analyzer.Lexers
                     continue;
                 }
 
-                if (statement.Substring(i).StartsWithKeyword(whereKeyword) || statement.Substring(i).StartsWith($"{whereKeyword}(", StringComparison.OrdinalIgnoreCase) || string.Equals(statement.Substring(i), whereKeyword, StringComparison.OrdinalIgnoreCase))
+                if (statement.Substring(i).StartsWithKeyword(whereKeyword, ' ', '(') || string.Equals(statement.Substring(i), whereKeyword, StringComparison.OrdinalIgnoreCase))
                 {
                     token = result.AddLexicalToken(token, Constants.EntityNamePattern);
                     result.Add(whereKeyword.ToLower());

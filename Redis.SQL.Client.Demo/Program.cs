@@ -18,22 +18,22 @@ namespace Redis.SQL.Client.Demo
             //var result2 = client.Query<User>(user => user.Class == classValue && user.StartTime == time);
             //var result = client.Query<User>(user => (user.Age == age && user.Name == name) || user.Created == creationDate);
 
-            //var result = client.ExecuteSql("   SeLeCT     *    frOm  user    whEre (( class='b' and age<=28)    or id=12201181) ");
-            //var result = client.ExecuteSql("  CreAte user(   NAME    :    STRING,   age:int32,  created:datetime,starttime:timespan,verified:boolean,     class:char,  id:int64)  ");
+            //var result = client.ExecuteSql("   SeLeCT user.id    frOm  user    whEre(id=12201181 or( class='b' and age  <  28)  ) ");
+            //var result = client.ExecuteSql("  CreAte user(NAME    :    STRING,   age:int32,  created:datetime,starttime:timespan,verified:boolean,     class:char,  id:int64  )  ");
             var result = client.ExecuteSql("  insert   user   (name,    age,created,starttime,    verified ,  class , id) values('ahmed'  , 23, '9/24/2017 09:00', '03:00:00'   , true, 'b', 1282221)  ");
 
-            //result.ContinueWith(x =>
-            //{
-            //    var res = x.Result;
+            result.ContinueWith(x =>
+            {
+                var res = x.Result;
 
-            //    foreach (var item in res)
-            //    {
-            //        foreach (var prop in item)
-            //        {
-            //            Console.WriteLine($"{prop.Key}: {prop.Value}");
-            //        }
-            //    }
-            //});
+                foreach (var item in res)
+                {
+                    foreach (var prop in item)
+                    {
+                        Console.WriteLine($"{prop.Key}: {prop.Value}");
+                    }
+                }
+            });
 
             var u1 = new User
             {
