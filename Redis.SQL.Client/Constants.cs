@@ -33,6 +33,8 @@ namespace Redis.SQL.Client
 
         internal const string EntityNamePattern = @"^([\w-]+)$";
 
+        internal const string EntityDesignPattern = @"^([\w-]+):([\w-]+)$";
+
         internal static readonly Grammar WhereGrammar = new Grammar(GrammarType.Where);
     }
 }
