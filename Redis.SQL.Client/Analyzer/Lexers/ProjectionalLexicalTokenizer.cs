@@ -9,23 +9,23 @@ namespace Redis.SQL.Client.Analyzer.Lexers
 {
     internal class ProjectionalLexicalTokenizer : ILexer
     {
-        public IEnumerable<string> Tokenize(string condition)
+        public IEnumerable<string> Tokenize(string statement)
         {
             var result = new List<string>();
 
             string token = string.Empty, fromKeyword = Keywords.From.ToString(), whereKeyword = Keywords.Where.ToString(), selectKeyword = Keywords.Select.ToString();
-            for (var i = 0; i < condition.Length; i++)
+            for (var i = 0; i < statement.Length; i++)
             {
-                if (condition[i] == ' ') continue;
+                if (statement[i] == ' ') continue;
 
-                if (condition.Substring(i).StartsWith(selectKeyword + " ", StringComparison.OrdinalIgnoreCase))
+                if (statement.Substring(i).StartsWith(selectKeyword + " ", StringComparison.OrdinalIgnoreCase))
                 {
                     i += selectKeyword.Length - 1;
                     result.Add(selectKeyword.ToLower());
                     continue;
                 }
 
-                if (condition.Substring(i).StartsWith(fromKeyword + " ", StringComparison.OrdinalIgnoreCase))
+                if (statement.Substring(i).StartsWith(fromKeyword + " ", StringComparison.OrdinalIgnoreCase))
                 {
                     i += fromKeyword.Length - 1;
                     token = AddToken(token, Constants.ProjectionTokenPattern, result);
@@ -33,21 +33,21 @@ namespace Redis.SQL.Client.Analyzer.Lexers
                     continue;
                 }
 
-                if (condition.Substring(i).StartsWith(whereKeyword + " ", StringComparison.OrdinalIgnoreCase) || condition.Substring(i).StartsWith(whereKeyword + "(", StringComparison.OrdinalIgnoreCase) || string.Equals(condition.Substring(i), whereKeyword, StringComparison.OrdinalIgnoreCase))
+                if (statement.Substring(i).StartsWith(whereKeyword + " ", StringComparison.OrdinalIgnoreCase) || statement.Substring(i).StartsWith(whereKeyword + "(", StringComparison.OrdinalIgnoreCase) || string.Equals(statement.Substring(i), whereKeyword, StringComparison.OrdinalIgnoreCase))
                 {
                     token = AddToken(token, Constants.EntityNamePattern, result);
                     result.Add(whereKeyword.ToLower());
-                    if(i + whereKeyword.Length <= condition.Length - 1) result.Add(condition.Substring(i + whereKeyword.Length).Trim());
+                    if(i + whereKeyword.Length <= statement.Length - 1) result.Add(statement.Substring(i + whereKeyword.Length).Trim());
                     break;
                 }
 
-                if (condition[i] == ',')
+                if (statement[i] == ',')
                 {
                     token = AddToken(token, Constants.ProjectionTokenPattern, result);
                     continue;
                 }
 
-                token += condition[i];
+                token += statement[i];
             }
 
             AddToken(token, string.Empty, result);

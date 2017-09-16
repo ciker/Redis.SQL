@@ -6,6 +6,7 @@
         Or,
         Select,
         From,
-        Where
+        Where,
+        Create
     }
 }

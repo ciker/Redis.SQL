@@ -4,6 +4,6 @@ namespace Redis.SQL.Client.Analyzer.Interfaces
 {
     internal interface ILexer
     {
-        IEnumerable<string> Tokenize(string condition);
+        IEnumerable<string> Tokenize(string statement);
     }
 }

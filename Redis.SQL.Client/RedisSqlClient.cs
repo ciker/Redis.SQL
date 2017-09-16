@@ -61,10 +61,15 @@ namespace Redis.SQL.Client
         {
             sql = sql.Trim();
             var selectKeyword = Keywords.Select.ToString();
+            var createKeyword = Keywords.Create.ToString();
 
-            if (sql.StartsWith(selectKeyword.ToLower() + " ", StringComparison.OrdinalIgnoreCase))
+            if (sql.StartsWith($"{selectKeyword.ToLower()} ", StringComparison.OrdinalIgnoreCase))
             {
                 return await _projectionEngine.ExecuteSelectStatement(sql);
+            }
+
+            if (sql.StartsWith($"{createKeyword.ToLower()} ", StringComparison.OrdinalIgnoreCase))
+            {
             }
 
             throw new SyntacticErrorException(sql);
