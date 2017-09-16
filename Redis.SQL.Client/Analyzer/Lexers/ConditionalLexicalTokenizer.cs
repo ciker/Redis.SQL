@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using Redis.SQL.Client.Analyzer.Interfaces;
 using Redis.SQL.Client.Enums;
-using Redis.SQL.Client.Exceptions;
 
 namespace Redis.SQL.Client.Analyzer.Lexers
 {
@@ -21,7 +19,7 @@ namespace Redis.SQL.Client.Analyzer.Lexers
                     token += '\'';
                     stringParam = !stringParam;
                     if (!stringParam)
-                        token = AddToken(token, result);
+                        token = result.AddLexicalToken(token, Constants.WhereClauseTokenPattern);
                     continue;
                 }
 
@@ -35,15 +33,15 @@ namespace Redis.SQL.Client.Analyzer.Lexers
 
                 if (condition[i] == '(' || condition[i] == ')')
                 {
-                    AddToken(token, result);
-                    token = AddToken(condition[i].ToString(), result);
+                    result.AddLexicalToken(token, Constants.WhereClauseTokenPattern);
+                    token = result.AddLexicalToken(condition[i].ToString(), Constants.WhereClauseTokenPattern);
                     continue;
                 }
 
                 if (IsKeyword(condition.Substring(i), out var keyword))
                 {
-                    AddToken(token, result);
-                    token = AddToken(" " + keyword + " ", result);
+                    result.AddLexicalToken(token, Constants.WhereClauseTokenPattern);
+                    token = result.AddLexicalToken($" {keyword} ", Constants.WhereClauseTokenPattern);
                     i += keyword.Length - 1;
                     continue;
                 }
@@ -51,19 +49,8 @@ namespace Redis.SQL.Client.Analyzer.Lexers
                 token += condition[i];
             }
 
-            AddToken(token, result);
+            result.AddLexicalToken(token, Constants.WhereClauseTokenPattern);
             return result;
-        }
-
-        private static string AddToken(string token, ICollection<string> tokens)
-        {
-            if (string.IsNullOrWhiteSpace(token)) return string.Empty;
-            if (!Regex.IsMatch(token.Trim(), Constants.WhereClauseTokenPattern))
-            {
-                throw new SyntacticErrorException(token);
-            }
-            tokens.Add(token);
-            return string.Empty;
         }
 
         private static bool IsKeyword(string condition, out string keyword)

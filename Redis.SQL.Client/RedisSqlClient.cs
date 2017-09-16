@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using Redis.SQL.Client.Analyzer.Lexers;
 using Redis.SQL.Client.Engines;
 using Redis.SQL.Client.Engines.Interfaces;
 using Redis.SQL.Client.Enums;
@@ -62,19 +63,29 @@ namespace Redis.SQL.Client
             sql = sql.Trim();
             var selectKeyword = Keywords.Select.ToString();
             var createKeyword = Keywords.Create.ToString();
+            var insertKeyword = Keywords.Insert.ToString();
 
-            if (sql.StartsWith($"{selectKeyword.ToLower()} ", StringComparison.OrdinalIgnoreCase))
+            if (sql.StartsWithKeyword(selectKeyword))
             {
                 return await _projectionEngine.ExecuteSelectStatement(sql);
             }
-
-            if (sql.StartsWith($"{createKeyword.ToLower()} ", StringComparison.OrdinalIgnoreCase))
+            
+            if (sql.StartsWithKeyword(createKeyword))
             {
                 await _creationEngine.ExecuteCreateStatement(sql);
-                return new List<IDictionary<string, string>>();
+                goto ReturnEmpty;
+            }
+
+            if (sql.StartsWithKeyword(insertKeyword))
+            {
+
+                goto ReturnEmpty;
             }
 
             throw new SyntacticErrorException(sql);
+
+        ReturnEmpty:
+            return new List<IDictionary<string, string>>();
         }
     }
 }

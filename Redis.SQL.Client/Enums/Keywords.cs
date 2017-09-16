@@ -7,6 +7,8 @@
         Select,
         From,
         Where,
-        Create
+        Create,
+        Insert,
+        Values
     }
 }

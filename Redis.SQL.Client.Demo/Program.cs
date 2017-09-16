@@ -8,18 +8,19 @@ namespace Redis.SQL.Client.Demo
         {
             var client = new RedisSqlClient();
 
-            //var creationDate = DateTime.UtcNow;
-            //var age = 25;
+            var creationDate = DateTime.UtcNow;
+            var age = 25;
             //var classValue = 'b';
-            //var name = "ahmed";
+            var name = "ahmed";
             //var time = TimeSpan.FromHours(3);
 
             //var result = client.Query<User>(x => x.StartTime == TimeSpan.Zero);
             //var result2 = client.Query<User>(user => user.Class == classValue && user.StartTime == time);
             //var result = client.Query<User>(user => (user.Age == age && user.Name == name) || user.Created == creationDate);
 
-            //var result = client.ExecuteSql("   SeLeCT user.name,  id, user.created, age, class    frOm user    whEre ( created > '9/15/2017 19:00')   ");
-            var result = client.ExecuteSql("   CreAte user (   NAME    :    STRING,   age:int32,  created:datetime,starttime:timespan,verified:boolean,     class:char,  id:int64)  ");
+            //var result = client.ExecuteSql("   SeLeCT     *    frOm  user    whEre (( class='b' and age<=28)    or id=12201181) ");
+            //var result = client.ExecuteSql("  CreAte user(   NAME    :    STRING,   age:int32,  created:datetime,starttime:timespan,verified:boolean,     class:char,  id:int64)  ");
+            var result = client.ExecuteSql("  insert   user   (name,    age,created,starttime,    verified ,  class , id) values('ahmed'  , 23, '9/24/2017 09:00', '03:00:00'   , true, 'b', 1282221)  ");
 
             //result.ContinueWith(x =>
             //{

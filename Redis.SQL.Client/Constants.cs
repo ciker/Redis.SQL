@@ -35,6 +35,8 @@ namespace Redis.SQL.Client
 
         internal const string EntityDesignPattern = @"^([\w-]+):([\w-]+)$";
 
+        internal const string PropertyValuePattern = @"^([\d.-]+|'.*'|[tT][rR][uU][eE]|[fF][aA][lL][sS][eE])$";
+
         internal static readonly Grammar WhereGrammar = new Grammar(GrammarType.Where);
     }
 }

@@ -22,6 +22,11 @@ namespace Redis.SQL.Client.Engines
             _setClient = new RedisSetStorageClient();
         }
 
+        public Task ExecuteInsertStatement(string statement)
+        {
+            return null;
+        }
+
         private async Task<bool> CheckEntityExistance(string entityName)
         {
             var mutex = Semaphores.GetEntitySemaphore(entityName);
