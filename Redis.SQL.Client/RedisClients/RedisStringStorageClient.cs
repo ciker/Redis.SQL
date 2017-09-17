@@ -33,5 +33,15 @@ namespace Redis.SQL.Client.RedisClients
         {
             return await _redisDatabase.StringIncrementAsync(key.ToLower());
         }
+
+        public async Task<long> DecrementValue(string key)
+        {
+            return await _redisDatabase.StringDecrementAsync(key.ToLower());
+        }
+
+        public async Task<bool> DeleteValue(string key)
+        {
+            return await _redisDatabase.KeyDeleteAsync(key.ToLower());
+        }
     }
 }

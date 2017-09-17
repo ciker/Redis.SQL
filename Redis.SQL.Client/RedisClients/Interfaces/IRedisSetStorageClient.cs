@@ -8,5 +8,6 @@ namespace Redis.SQL.Client.RedisClients.Interfaces
         Task<bool> SetContains<T>(string key, T value);
         Task<bool> AddToSet<T>(string key, T value);
         Task<IEnumerable<string>> GetSetMembers(string key);
+        Task<bool> RemoveFromSetByValue(string key, string value);
     }
 }

@@ -43,5 +43,10 @@ namespace Redis.SQL.Client.RedisClients
         {
             return await _redisDatabase.SortedSetAddAsync(key.ToLower(), Helpers.SerializeRedisValue(value), score);
         }
+
+        public async Task<bool> RemoveFromSortedSetByValue(string key, string value)
+        {
+            return await _redisDatabase.SortedSetRemoveAsync(key.ToLower(), value);
+        }
     }
 }

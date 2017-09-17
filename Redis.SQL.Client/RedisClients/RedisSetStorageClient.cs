@@ -35,5 +35,10 @@ namespace Redis.SQL.Client.RedisClients
         {
             return (await _redisDatabase.SetMembersAsync(key.ToLower())).Select(x => x.ToString());
         }
+
+        public async Task<bool> RemoveFromSetByValue(string key, string value)
+        {
+            return await _redisDatabase.SetRemoveAsync(key.ToLower(), value);
+        }
     }
 }

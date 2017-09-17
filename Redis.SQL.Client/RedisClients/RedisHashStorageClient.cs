@@ -70,6 +70,11 @@ namespace Redis.SQL.Client.RedisClients
                     field = string.Join(",", field.Split(',').Where(x => x != value));
                 }
 
+                if (string.IsNullOrEmpty(field))
+                {
+                    return await _redisDatabase.HashDeleteAsync(hashSet.ToLower(), key.ToLower());
+                }
+
                 return await SetHashField(hashSet.ToLower(), key.ToLower(), Helpers.SerializeRedisValue(field));
             }
             finally

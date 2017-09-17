@@ -22,6 +22,8 @@ namespace Redis.SQL.Client
 
         private readonly IProjectionEngine _projectionEngine;
 
+        private readonly IDeletionEngine _deletionEngine;
+
         private readonly ILambdaExpressionTreeParser _lambdaExpressionTreeParser;
 
         public RedisSqlClient()
@@ -31,6 +33,7 @@ namespace Redis.SQL.Client
             _lambdaExpressionTreeParser = new LambdaExpressionTreeParser();
             _projectionEngine = new RedisSqlProjectionEngine();
             _insertionEngine = new RedisSqlInsertionEngine();
+            _deletionEngine = new RedisSqlDeletionEngine();
         }
 
         public async Task<IEnumerable<TEntity>> Query<TEntity>(string condition)
@@ -64,6 +67,7 @@ namespace Redis.SQL.Client
             var selectKeyword = Keywords.Select.ToString();
             var createKeyword = Keywords.Create.ToString();
             var insertKeyword = Keywords.Insert.ToString();
+            var deleteKeyword = Keywords.Delete.ToString();
 
             if (sql.StartsWithKeyword(selectKeyword, ' ', '*'))
             {
@@ -79,6 +83,12 @@ namespace Redis.SQL.Client
             if (sql.StartsWithKeyword(insertKeyword, ' '))
             {
                 await _insertionEngine.ExecuteInsertStatement(sql);
+                goto ReturnEmpty;
+            }
+
+            if (sql.StartsWithKeyword(deleteKeyword, ' '))
+            {
+                await _deletionEngine.ExecuteDeleteStatement(sql);
                 goto ReturnEmpty;
             }
 

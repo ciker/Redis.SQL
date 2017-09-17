@@ -9,6 +9,7 @@
         Where,
         Create,
         Insert,
-        Values
+        Values,
+        Delete
     }
 }
