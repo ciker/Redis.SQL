@@ -48,7 +48,7 @@ namespace Redis.SQL.Client.RedisClients
                     field += "," + value;
                 }
 
-                return await SetHashField(hashSet.ToLower(), key.ToLower(), Helpers.SerializeRedisValue(field));
+                return await SetHashField(hashSet, key, Helpers.SerializeRedisValue(field));
             }
             finally
             {
@@ -75,7 +75,7 @@ namespace Redis.SQL.Client.RedisClients
                     return await _redisDatabase.HashDeleteAsync(hashSet.ToLower(), key.ToLower());
                 }
 
-                return await SetHashField(hashSet.ToLower(), key.ToLower(), Helpers.SerializeRedisValue(field));
+                return await SetHashField(hashSet, key, Helpers.SerializeRedisValue(field));
             }
             finally
             {

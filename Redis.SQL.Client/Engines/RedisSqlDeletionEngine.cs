@@ -27,7 +27,7 @@ namespace Redis.SQL.Client.Engines
 
         public async Task ExecuteDeleteStatement(string statement)
         {
-            await DeleteEntityByKey("user", "f30ec0d6b643427ab628393c652166ee");
+            await DeleteEntityByKey("user", "36d6c7e06740454782118bc0640f529e");
         }
 
         private async Task DeleteEntityByKey(string entityName, string key)
@@ -38,30 +38,28 @@ namespace Redis.SQL.Client.Engines
 
             var entity = JsonConvert.DeserializeObject<dynamic>(encodedEntity);
 
-            var propertyValues = new Dictionary<string, string>();
+            await _stringClient.DeleteValue(entityStoreKey);
+            await _stringClient.DecrementValue(Helpers.GetEntityCountKey(entityName));
+            await _setClient.RemoveFromSetByValue(Helpers.GetEntityIdentifierCollectionKey(entityName), key);
 
             foreach (var property in entity)
             {
                 var name = property.Name;
                 var propertyTypeName = await _hashClient.GetHashField(Helpers.GetEntityPropertyTypesKey(entityName), name);
                 var value = Helpers.EncodePropertyValue(propertyTypeName, (property as IEnumerable<dynamic>)?.FirstOrDefault()?.Value?.ToString());
-                propertyValues.Add(name, value);
+                await PurgeProperty(entityName, key, name, value);
             }
+        }
 
-            await _stringClient.DeleteValue(entityStoreKey);
-            await _stringClient.DecrementValue(Helpers.GetEntityCountKey(entityName));
-            await _setClient.RemoveFromSetByValue(Helpers.GetEntityIdentifierCollectionKey(entityName), key);
+        private async Task PurgeProperty(string entityName, string entityKey, string propertyName, string propertyValue)
+        {
+            var entityPropertyIndexKey = Helpers.GetEntityIndexKey(entityName, propertyName);
+            await _hashClient.RemoveStringFromHashField(entityPropertyIndexKey, propertyValue, entityKey);
+            var updatedIndex = await _hashClient.GetHashField(entityPropertyIndexKey, propertyValue);
 
-            foreach (var valueMap in propertyValues)
+            if (string.IsNullOrWhiteSpace(updatedIndex))
             {
-                var entityPropertyIndexKey = Helpers.GetEntityIndexKey(entityName, valueMap.Key);
-                await _hashClient.RemoveStringFromHashField(entityPropertyIndexKey, valueMap.Value, key);
-                var updatedIndex = await _hashClient.GetHashField(entityPropertyIndexKey, valueMap.Value);
-
-                if (string.IsNullOrWhiteSpace(updatedIndex))
-                {
-                    await _zSetClient.RemoveFromSortedSetByValue(Helpers.GetPropertyCollectionKey(entityName, valueMap.Key), valueMap.Value);
-                }
+                await _zSetClient.RemoveFromSortedSetByValue(Helpers.GetPropertyCollectionKey(entityName, propertyName), propertyValue.ToLower());
             }
         }
     }
