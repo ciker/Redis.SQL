@@ -38,30 +38,31 @@ namespace Redis.SQL.Client.Engines
         public async Task<IEnumerable<TEntity>> QueryEntities<TEntity>(string condition)
         {
             var entityName = Helpers.GetTypeName<TEntity>();
-            var entities = await QueryKeys(entityName, condition);
+            var entities = await GetSerializedEntities(entityName, condition);
             return entities.Select(JsonConvert.DeserializeObject<TEntity>).ToList();
         }
 
         public async Task<IEnumerable<dynamic>> QueryEntities(string entityName, string condition)
         {
-            var entities = await QueryKeys(entityName, condition);
+            var entities = await GetSerializedEntities(entityName, condition);
             return entities.Select(JsonConvert.DeserializeObject<dynamic>).ToList();
         }
 
-        public async Task<IEnumerable<string>> QueryKeys(string entityName, string condition)
+        public async Task<IEnumerable<string>> GetEntityKeys(string entityName, string condition)
         {
-            IEnumerable<string> keys;
-
             if (string.IsNullOrEmpty(condition))
             {
-                keys = await GetAllEntitykeys(entityName);
+                return await GetAllEntitykeys(entityName);
             }
-            else
-            {
-                var tokens = _conditionalTokenizer.Tokenize(condition);
-                var parseTree = _whereParser.ParseCondition(tokens);
-                keys = await ExecuteTree(entityName, parseTree);
-            }
+
+            var tokens = _conditionalTokenizer.Tokenize(condition);
+            var parseTree = _whereParser.ParseCondition(tokens);
+            return await ExecuteTree(entityName, parseTree);
+        }
+
+        private async Task<IEnumerable<string>> GetSerializedEntities(string entityName, string condition)
+        {
+            var keys = await GetEntityKeys(entityName, condition);
 
             ICollection<string> result = new List<string>();
 
@@ -75,13 +76,19 @@ namespace Redis.SQL.Client.Engines
 
         public async Task<string> ConstructWhereStatementFromIdentifiers<TEntity>(TEntity entity)
         {
+            bool KeyDefined(MemberInfo info) => info.IsDefined(Constants.KeyAttributeType);
+
             var entityType = typeof(TEntity);
 
             var entityName = entityType.Name.ToLower();
 
-            var keyProps = entityType.GetProperties().Where(prop => prop.IsDefined(Constants.KeyAttributeType)).ToList();
+            var identifiers = new Dictionary<string, string>();
 
-            if (!keyProps.Any())
+            entityType.GetFields().Where(KeyDefined).ToList().ForEach(x => identifiers.Add(x.Name, x.GetValue(entity).ToString()));
+
+            entityType.GetProperties().Where(KeyDefined).ToList().ForEach(x => identifiers.Add(x.Name, x.GetValue(entity).ToString()));
+
+            if (!identifiers.Any())
             {
                 throw new KeyAttributeMissingException();
             }
@@ -89,16 +96,16 @@ namespace Redis.SQL.Client.Engines
             var whereStatement = string.Empty;
 
             var andKeyword = Keywords.And.ToString();
-            for (var i = 0; i < keyProps.Count; i++)
-            {
-                var key = keyProps[i];
-                var value = key.GetValue(entity);
 
-                var propertyType = await _hashClient.GetHashField(Helpers.GetEntityPropertyTypesKey(entityName), key.Name.ToLower());
+            foreach (var identifier in identifiers)
+            {
+                var value = identifier.Value;
+
+                var propertyType = await _hashClient.GetHashField(Helpers.GetEntityPropertyTypesKey(entityName), identifier.Key.ToLower());
 
                 if (string.IsNullOrEmpty(propertyType))
                 {
-                    throw new NonExistentPropertyException(key.Name);
+                    throw new NonExistentPropertyException(identifier.Key);
                 }
 
                 Enum.TryParse(propertyType, true, out TypeNames type);
@@ -108,15 +115,10 @@ namespace Redis.SQL.Client.Engines
                     value = $"'{value}'";
                 }
 
-                whereStatement += $"{key.Name} = {value}";
-
-                if (i < keyProps.Count - 1)
-                {
-                    whereStatement += $" {andKeyword} ";
-                }
+                whereStatement += $"{identifier.Key} = {value} {andKeyword} ";
             }
 
-            return whereStatement;
+            return whereStatement.Substring(0, whereStatement.Length - 1 - (andKeyword.Length + 1));
         }
 
         private async Task<string> RetrieveEntityJsonByKey(string entityName, string key)

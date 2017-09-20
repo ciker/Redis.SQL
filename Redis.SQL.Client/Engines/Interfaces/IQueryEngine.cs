@@ -7,7 +7,7 @@ namespace Redis.SQL.Client.Engines.Interfaces
     {
         Task<IEnumerable<TEntity>> QueryEntities<TEntity>(string condition);
         Task<IEnumerable<dynamic>> QueryEntities(string entityName, string condition);
-        Task<IEnumerable<string>> QueryKeys(string entityName, string condition);
+        Task<IEnumerable<string>> GetEntityKeys(string entityName, string condition);
         Task<string> ConstructWhereStatementFromIdentifiers<TEntity>(TEntity entity);
     }
 }

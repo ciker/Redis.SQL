@@ -38,7 +38,7 @@ namespace Redis.SQL.Client.Engines
         {
             var tokens = _deletionLexicalTokenizer.Tokenize(statement);
             var model = (DeletionModel)_deletionParser.ParseTokens(tokens);
-            var keys = await _queryEngine.QueryKeys(model.EntityName, model.WhereCondition);
+            var keys = await _queryEngine.GetEntityKeys(model.EntityName, model.WhereCondition);
             await DeleteAllKeys(model.EntityName, keys);
         }
 
@@ -48,7 +48,7 @@ namespace Redis.SQL.Client.Engines
 
             var whereStatement = await _queryEngine.ConstructWhereStatementFromIdentifiers(entity);
 
-            var keys = (await _queryEngine.QueryKeys(entityName, whereStatement)).ToList();
+            var keys = (await _queryEngine.GetEntityKeys(entityName, whereStatement)).ToList();
 
             if (keys.Count > 1)
             {
