@@ -79,26 +79,26 @@ namespace Redis.SQL.Client.Engines
 
             var entityName = entityType.Name.ToLower();
 
-            var uniqueIdentifiers = entityType.GetProperties().Where(prop => prop.IsDefined(Constants.UniqueIdentifierType)).ToList();
+            var keyProps = entityType.GetProperties().Where(prop => prop.IsDefined(Constants.KeyAttributeType)).ToList();
 
-            if (!uniqueIdentifiers.Any())
+            if (!keyProps.Any())
             {
-                throw new UniqueIdentifierMissingException();
+                throw new KeyAttributeMissingException();
             }
 
             var whereStatement = string.Empty;
 
             var andKeyword = Keywords.And.ToString();
-            for (var i = 0; i < uniqueIdentifiers.Count; i++)
+            for (var i = 0; i < keyProps.Count; i++)
             {
-                var identifier = uniqueIdentifiers[i];
-                var value = identifier.GetValue(entity);
+                var key = keyProps[i];
+                var value = key.GetValue(entity);
 
-                var propertyType = await _hashClient.GetHashField(Helpers.GetEntityPropertyTypesKey(entityName), identifier.Name.ToLower());
+                var propertyType = await _hashClient.GetHashField(Helpers.GetEntityPropertyTypesKey(entityName), key.Name.ToLower());
 
                 if (string.IsNullOrEmpty(propertyType))
                 {
-                    throw new NonExistentPropertyException(identifier.Name);
+                    throw new NonExistentPropertyException(key.Name);
                 }
 
                 Enum.TryParse(propertyType, true, out TypeNames type);
@@ -108,9 +108,9 @@ namespace Redis.SQL.Client.Engines
                     value = $"'{value}'";
                 }
 
-                whereStatement += $"{identifier.Name} = {value}";
+                whereStatement += $"{key.Name} = {value}";
 
-                if (i < uniqueIdentifiers.Count - 1)
+                if (i < keyProps.Count - 1)
                 {
                     whereStatement += $" {andKeyword} ";
                 }

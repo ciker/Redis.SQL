@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Redis.SQL.Client.Analyzer.Interfaces;
 using Redis.SQL.Client.Analyzer.Lexers;
 using Redis.SQL.Client.Analyzer.Parsers;
 using Redis.SQL.Client.Engines.Interfaces;
-using Redis.SQL.Client.Enums;
 using Redis.SQL.Client.Exceptions;
 using Redis.SQL.Client.Models;
 using Redis.SQL.Client.RedisClients;
@@ -55,7 +52,7 @@ namespace Redis.SQL.Client.Engines
 
             if (keys.Count > 1)
             {
-                throw new NonUniqueAttributeException();
+                throw new NonUniqueKeyException();
             }
 
             await DeleteAllKeys(entityName, keys);

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using Redis.SQL.Client.Analyzer;
 using Redis.SQL.Client.Enums;
 
@@ -49,6 +50,6 @@ namespace Redis.SQL.Client
 
         internal static readonly Grammar WhereGrammar = new Grammar(GrammarType.Where);
 
-        internal static Type UniqueIdentifierType = typeof(UniqueIdentifier);
+        internal static Type KeyAttributeType = typeof(KeyAttribute);
     }
 }
