@@ -82,20 +82,21 @@ namespace Redis.SQL.Client.Engines
             foreach (var item in propertyValues)
             {
                 var propertyType = await _hashClient.GetHashField(Helpers.GetEntityPropertyTypesKey(entityName), item.Key.ToLower());
+
+                if (string.IsNullOrEmpty(propertyType))
+                {
+                    throw new NonExistentPropertyException(item.Key);
+                }
+
                 var value = item.Value;
 
                 await AddPropertyToStore(entityName, identifier, propertyType, item.Key, item.Value);
 
-                if (Enum.TryParse(propertyType, true, out TypeNames type))
+                Enum.TryParse(propertyType, true, out TypeNames type);
+
+                if (Helpers.QuotedValue(type))
                 {
-                    if (type == TypeNames.Char || type == TypeNames.DateTime || type == TypeNames.String || type == TypeNames.TimeSpan)
-                    {
-                        value = $"\"{item.Value}\"";
-                    }
-                }
-                else
-                {
-                    throw new UnsupportedTypeException(propertyType);
+                    value = $"\"{item.Value}\"";
                 }
 
                 entity += $"  \"{item.Key}\": {value}, {Environment.NewLine}";

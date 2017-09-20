@@ -92,5 +92,7 @@ namespace Redis.SQL.Client
         private static string GetTimeSpanRedisValue(TimeSpan time) => time.TotalMilliseconds.ToString(CultureInfo.InvariantCulture);
 
         private static string GetBooleanRedisValue(bool value) => (value ? (int)RedisBoolean.True : (int)RedisBoolean.False).ToString();
+
+        internal static bool QuotedValue(TypeNames type) => type == TypeNames.Char || type == TypeNames.DateTime || type == TypeNames.String || type == TypeNames.TimeSpan;
     }
 }

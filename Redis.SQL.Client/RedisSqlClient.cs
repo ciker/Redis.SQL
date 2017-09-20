@@ -61,6 +61,11 @@ namespace Redis.SQL.Client
             await _creationEngine.CreateEntity<TEntity>();
         }
 
+        public async Task Delete<TEntity>(TEntity entity)
+        {
+            await _deletionEngine.DeleteEntity(entity);
+        }
+
         public async Task<IEnumerable<IDictionary<string, string>>> ExecuteSql(string sql)
         {
             sql = sql.Trim();

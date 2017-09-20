@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Redis.SQL.Client.Analyzer.Interfaces;
@@ -7,6 +9,7 @@ using Redis.SQL.Client.Analyzer.Lexers;
 using Redis.SQL.Client.Analyzer.Parsers;
 using Redis.SQL.Client.Engines.Interfaces;
 using Redis.SQL.Client.Enums;
+using Redis.SQL.Client.Exceptions;
 using Redis.SQL.Client.RedisClients;
 using Redis.SQL.Client.RedisClients.Interfaces;
 
@@ -68,6 +71,52 @@ namespace Redis.SQL.Client.Engines
             }
 
             return result;
+        }
+
+        public async Task<string> ConstructWhereStatementFromIdentifiers<TEntity>(TEntity entity)
+        {
+            var entityType = typeof(TEntity);
+
+            var entityName = entityType.Name.ToLower();
+
+            var uniqueIdentifiers = entityType.GetProperties().Where(prop => prop.IsDefined(Constants.UniqueIdentifierType)).ToList();
+
+            if (!uniqueIdentifiers.Any())
+            {
+                throw new UniqueIdentifierMissingException();
+            }
+
+            var whereStatement = string.Empty;
+
+            var andKeyword = Keywords.And.ToString();
+            for (var i = 0; i < uniqueIdentifiers.Count; i++)
+            {
+                var identifier = uniqueIdentifiers[i];
+                var value = identifier.GetValue(entity);
+
+                var propertyType = await _hashClient.GetHashField(Helpers.GetEntityPropertyTypesKey(entityName), identifier.Name.ToLower());
+
+                if (string.IsNullOrEmpty(propertyType))
+                {
+                    throw new NonExistentPropertyException(identifier.Name);
+                }
+
+                Enum.TryParse(propertyType, true, out TypeNames type);
+
+                if (Helpers.QuotedValue(type))
+                {
+                    value = $"'{value}'";
+                }
+
+                whereStatement += $"{identifier.Name} = {value}";
+
+                if (i < uniqueIdentifiers.Count - 1)
+                {
+                    whereStatement += $" {andKeyword} ";
+                }
+            }
+
+            return whereStatement;
         }
 
         private async Task<string> RetrieveEntityJsonByKey(string entityName, string key)

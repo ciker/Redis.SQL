@@ -5,5 +5,6 @@ namespace Redis.SQL.Client.Engines.Interfaces
     internal interface IDeletionEngine
     {
         Task ExecuteDeleteStatement(string statement);
+        Task DeleteEntity<TEntity>(TEntity entity);
     }
 }

@@ -1,11 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Redis.SQL.Client.Analyzer.Interfaces;
 using Redis.SQL.Client.Analyzer.Lexers;
 using Redis.SQL.Client.Analyzer.Parsers;
 using Redis.SQL.Client.Engines.Interfaces;
+using Redis.SQL.Client.Enums;
+using Redis.SQL.Client.Exceptions;
 using Redis.SQL.Client.Models;
 using Redis.SQL.Client.RedisClients;
 using Redis.SQL.Client.RedisClients.Interfaces;
@@ -38,9 +42,30 @@ namespace Redis.SQL.Client.Engines
             var tokens = _deletionLexicalTokenizer.Tokenize(statement);
             var model = (DeletionModel)_deletionParser.ParseTokens(tokens);
             var keys = await _queryEngine.QueryKeys(model.EntityName, model.WhereCondition);
+            await DeleteAllKeys(model.EntityName, keys);
+        }
+
+        public async Task DeleteEntity<TEntity>(TEntity entity)
+        {
+            var entityName = Helpers.GetTypeName<TEntity>();
+
+            var whereStatement = await _queryEngine.ConstructWhereStatementFromIdentifiers(entity);
+
+            var keys = (await _queryEngine.QueryKeys(entityName, whereStatement)).ToList();
+
+            if (keys.Count > 1)
+            {
+                throw new NonUniqueAttributeException();
+            }
+
+            await DeleteAllKeys(entityName, keys);
+        }
+
+        private async Task DeleteAllKeys(string entityName, IEnumerable<string> keys)
+        {
             foreach (var key in keys)
             {
-                await DeleteEntityByKey(model.EntityName, key);
+                await DeleteEntityByKey(entityName, key);
             }
         }
 

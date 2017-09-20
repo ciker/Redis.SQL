@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace Redis.SQL.Client.Demo
 {
@@ -16,7 +17,7 @@ namespace Redis.SQL.Client.Demo
 
             //var result = client.Query<User>(x => x.StartTime == TimeSpan.Zero);
             //var result2 = client.Query<User>(user => user.Class == classValue && user.StartTime == time);
-            var result = client.Query<User>(user => (user.Age == age && user.Name == name) || user.Created == creationDate);
+            //var result = client.Query<User>(user => (user.Age == age && user.Name == name) || user.Created == creationDate);
 
             //var result = client.ExecuteSql("    delete user where age = 25");
             //var result = client.ExecuteSql("   SeLeCT user.id, name    frOm  user    whEre(id=12201181 or( class='c' and age  <  28)  ) ");
@@ -137,15 +138,17 @@ namespace Redis.SQL.Client.Demo
             };
 
             //client.Create<User>();
-            client.Insert(u1);
-            client.Insert(u2);
-            client.Insert(u3);
-            client.Insert(u4);
-            client.Insert(u5);
-            client.Insert(u6);
-            client.Insert(u7);
-            client.Insert(u8);
-            client.Insert(u9);
+            //client.Insert(u1);
+            //client.Insert(u2);
+            //client.Insert(u3);
+            //client.Insert(u4);
+            //client.Insert(u5);
+            //client.Insert(u6);
+            //client.Insert(u7);
+            //client.Insert(u8);
+            //client.Insert(u9);
+
+            client.Delete(u1);
 
             Console.ReadLine();
         }
@@ -159,6 +162,7 @@ namespace Redis.SQL.Client.Demo
         public TimeSpan StartTime { get; set; }
         public bool Verified { get; set; }
         public char Class { get; set; }
+        [Key]
         public long Id { get; set; }
     }
 }

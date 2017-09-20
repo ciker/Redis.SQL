@@ -1,4 +1,5 @@
-﻿using Redis.SQL.Client.Analyzer;
+﻿using System;
+using Redis.SQL.Client.Analyzer;
 using Redis.SQL.Client.Enums;
 
 namespace Redis.SQL.Client
@@ -47,5 +48,7 @@ namespace Redis.SQL.Client
         internal const string CreateStatementPattern = @"^[cC][rR][eE][aA][tT][eE][\s]+([\w-]+)[\s]*([\(](([\s]*([\w-]+)[\s]*[\:][\s]*([\w-]+)[\s]*)|([\s]*([\w-]+)[\s]*[\:][\s]*([\w-]+)[\s]*[,]))+[\)])+$";
 
         internal static readonly Grammar WhereGrammar = new Grammar(GrammarType.Where);
+
+        internal static Type UniqueIdentifierType = typeof(UniqueIdentifier);
     }
 }
