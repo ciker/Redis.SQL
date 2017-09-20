@@ -19,10 +19,11 @@ namespace Redis.SQL.Client.Demo
             //var result2 = client.Query<User>(user => user.Class == classValue && user.StartTime == time);
             //var result = client.Query<User>(user => (user.Age == age && user.Name == name) || user.Created == creationDate);
 
-            //var result = client.ExecuteSql("    delete user where age = 25");
+            //var result = client.ExecuteSql("    delete user where (age = 25 and name='ahmed')");
             //var result = client.ExecuteSql("   SeLeCT user.id, name, class, age    frOm  user    whEre(id=12201181 or( class='c' and age  <  28)  ) ");
             //var result = client.ExecuteSql("  CreAte user(NAME    :    STRING,   age:int32,  created:datetime,starttime:timespan,verified:boolean,     class:char,  id:int64  )  ");
             //var result = client.ExecuteSql("  insert   user   (name,    age,created,starttime,    verified ,  class , id) values('Test Insert1'  , 25, '12/26/2017 10:00', '09:30:00'   , false, 'c', 1202100)  ");
+            var result = client.ExecuteSql("  insert   user   (name,    age,created,starttime,    verified ,  class , id) values()  ");
 
             //var result = client.Query<User>(x => x.Age == 25 || x.Id == 12999831);
             //result.ContinueWith(x =>
