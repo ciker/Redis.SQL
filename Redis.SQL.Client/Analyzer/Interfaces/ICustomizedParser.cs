@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Redis.SQL.Client.Models;
 
 namespace Redis.SQL.Client.Analyzer.Interfaces
