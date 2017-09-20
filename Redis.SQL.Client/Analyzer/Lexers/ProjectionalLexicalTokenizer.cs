@@ -7,7 +7,7 @@ namespace Redis.SQL.Client.Analyzer.Lexers
 {
     internal class ProjectionalLexicalTokenizer : ILexer
     {
-        public IEnumerable<string> Tokenize(string statement)
+        public IList<string> Tokenize(string statement)
         {
             var result = new List<string>();
 

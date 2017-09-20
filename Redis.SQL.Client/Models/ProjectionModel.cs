@@ -6,7 +6,6 @@ namespace Redis.SQL.Client.Models
     {
         internal string Query { get; set; }
         internal ICollection<string> ProjectedProperties { get; set; }
-        internal string EntityName { get; set; }
         internal bool ProjectAllProperties { get; set; }
     }
 }

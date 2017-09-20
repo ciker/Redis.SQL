@@ -32,7 +32,7 @@ namespace Redis.SQL.Client.Engines
 
         public async Task ExecuteCreateStatement(string createStatement)
         {
-            var tokens = _creationalLexicalTokenizer.Tokenize(createStatement).ToList();
+            var tokens = _creationalLexicalTokenizer.Tokenize(createStatement);
             var model = (CreationModel)_creationalParser.ParseTokens(tokens);
             await CreateEntity(model.EntityName, model.Properties);
         }

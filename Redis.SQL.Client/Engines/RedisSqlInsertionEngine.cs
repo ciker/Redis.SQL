@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Redis.SQL.Client.Analyzer.Interfaces;
@@ -37,7 +36,7 @@ namespace Redis.SQL.Client.Engines
 
         public async Task ExecuteInsertStatement(string statement)
         {
-            var tokens = _insertionLexer.Tokenize(statement).ToList();
+            var tokens = _insertionLexer.Tokenize(statement);
             var model = (InsertionModel)_insertionParser.ParseTokens(tokens);
             var identifier = Helpers.GenerateRandomString();
             var entity = await EncodeEntity(model.EntityName, identifier, model.PropertyValues);

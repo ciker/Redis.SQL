@@ -16,9 +16,9 @@ namespace Redis.SQL.Client.Demo
 
             //var result = client.Query<User>(x => x.StartTime == TimeSpan.Zero);
             //var result2 = client.Query<User>(user => user.Class == classValue && user.StartTime == time);
-            //var result = client.Query<User>(user => (user.Age == age && user.Name == name) || user.Created == creationDate);
+            var result = client.Query<User>(user => (user.Age == age && user.Name == name) || user.Created == creationDate);
 
-            var result = client.ExecuteSql("    delete from users where age = 25");
+            //var result = client.ExecuteSql("    delete user where age = 25");
             //var result = client.ExecuteSql("   SeLeCT user.id, name    frOm  user    whEre(id=12201181 or( class='c' and age  <  28)  ) ");
             //var result = client.ExecuteSql("  CreAte user(NAME    :    STRING,   age:int32,  created:datetime,starttime:timespan,verified:boolean,     class:char,  id:int64  )  ");
             //var result = client.ExecuteSql("  insert   user   (name,    age,created,starttime,    verified ,  class , id) values('Test Insert1'  , 25, '12/26/2017 10:00', '09:30:00'   , false, 'c', 1202100)  ");
@@ -137,15 +137,15 @@ namespace Redis.SQL.Client.Demo
             };
 
             //client.Create<User>();
-            //client.Insert(u1);
-            //client.Insert(u2);
-            //client.Insert(u3);
-            //client.Insert(u4);
-            //client.Insert(u5);
-            //client.Insert(u6);
-            //client.Insert(u7);
-            //client.Insert(u8);
-            //client.Insert(u9);
+            client.Insert(u1);
+            client.Insert(u2);
+            client.Insert(u3);
+            client.Insert(u4);
+            client.Insert(u5);
+            client.Insert(u6);
+            client.Insert(u7);
+            client.Insert(u8);
+            client.Insert(u9);
 
             Console.ReadLine();
         }

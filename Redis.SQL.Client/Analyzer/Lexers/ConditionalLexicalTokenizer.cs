@@ -6,9 +6,9 @@ namespace Redis.SQL.Client.Analyzer.Lexers
 {
     internal class ConditionalLexicalTokenizer : ILexer
     {
-        public IEnumerable<string> Tokenize(string condition)
+        public IList<string> Tokenize(string condition)
         {
-            ICollection<string> result = new List<string>();
+            IList<string> result = new List<string>();
             var stringParam = false;
             var token = string.Empty;
 

@@ -27,7 +27,7 @@ namespace Redis.SQL.Client.Engines
 
         public async Task<IEnumerable<IDictionary<string, string>>> ExecuteSelectStatement(string selectStatement)
         {
-            var tokens = _projectionalTokenizer.Tokenize(selectStatement).ToList();
+            var tokens = _projectionalTokenizer.Tokenize(selectStatement);
             var projectionalModel = (ProjectionModel)_projectionalParser.ParseTokens(tokens);
             var queryResult = await _queryEngine.QueryEntities(projectionalModel.EntityName, projectionalModel.Query);
             var result = new List<IDictionary<string, string>>();

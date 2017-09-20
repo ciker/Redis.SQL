@@ -6,7 +6,7 @@ namespace Redis.SQL.Client.Analyzer.Lexers
 {
     internal class InsertionLexicalTokenizer : ILexer
     {
-        public IEnumerable<string> Tokenize(string statement)
+        public IList<string> Tokenize(string statement)
         {
             var tokens = new List<string>();
             var values = false;
