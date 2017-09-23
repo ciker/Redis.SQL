@@ -9,21 +9,22 @@ namespace Redis.SQL.Client.Analyzer.Lexers
         public IList<string> Tokenize(string statement)
         {
             var tokens = new List<string>();
-            var values = false;
+            bool values = false, stringToken = false;
             string token = string.Empty, insertKeyword = Keywords.Insert.ToString(), valuesKeyword = Keywords.Values.ToString();
 
             for (var i = 0; i < statement.Length; i++)
             {
-                if (!values && statement[i] == ' ') continue;
+                if (statement[i] == '\'') stringToken = !stringToken;
+                if (!stringToken && statement[i] == ' ') continue;
 
-                if (statement.Substring(i).StartsWithKeyword(insertKeyword, ' '))
+                if (!stringToken && statement.Substring(i).StartsWithKeyword(insertKeyword, ' '))
                 {
                     i += insertKeyword.Length - 1;
                     token = tokens.AddLexicalToken(insertKeyword, string.Empty);
                     continue;
                 }
 
-                if (statement.Substring(i).StartsWithKeyword(valuesKeyword, ' ', '('))
+                if (!stringToken && statement.Substring(i).StartsWithKeyword(valuesKeyword, ' ', '('))
                 {
                     values = true;
                     i += valuesKeyword.Length - 1;
@@ -31,7 +32,7 @@ namespace Redis.SQL.Client.Analyzer.Lexers
                     continue;
                 }
 
-                if (statement[i] == '(' || statement[i] == ',' || statement[i] == ')')
+                if (!stringToken && (statement[i] == '(' || statement[i] == ',' || statement[i] == ')'))
                 {
                     var pattern = values ? Constants.PropertyValuePattern : Constants.EntityNamePattern;
                     token = tokens.AddLexicalToken(token, pattern);
