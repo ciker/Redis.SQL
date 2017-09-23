@@ -82,13 +82,14 @@ namespace Redis.SQL.Client.Engines
             {
                 var name = property.Name;
                 var propertyTypeName = await _hashClient.GetHashField(Helpers.GetEntityPropertyTypesKey(entityName), name);
-                var value = Helpers.EncodePropertyValue(propertyTypeName, (property as IEnumerable<dynamic>)?.FirstOrDefault()?.Value?.ToString());
-                await PurgeProperty(entityName, key, name, value);
+                var value = (property as IEnumerable<dynamic>)?.FirstOrDefault()?.Value?.ToString();
+                await PurgeProperty(entityName, key, name, value, propertyTypeName);
             }
         }
 
-        private async Task PurgeProperty(string entityName, string entityKey, string propertyName, string propertyValue)
+        public async Task PurgeProperty(string entityName, string entityKey, string propertyName, string propertyValue, string propertyTypeName)
         {
+            propertyValue = Helpers.EncodePropertyValue(propertyTypeName, propertyValue);
             var entityPropertyIndexKey = Helpers.GetEntityIndexKey(entityName, propertyName);
             await _hashClient.RemoveStringFromHashField(entityPropertyIndexKey, propertyValue, entityKey);
             var updatedIndex = await _hashClient.GetHashField(entityPropertyIndexKey, propertyValue);

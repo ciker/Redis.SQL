@@ -6,5 +6,6 @@ namespace Redis.SQL.Client.Engines.Interfaces
     {
         Task ExecuteDeleteStatement(string statement);
         Task DeleteEntity<TEntity>(TEntity entity);
+        Task PurgeProperty(string entityName, string entityKey, string propertyName, string propertyValue, string propertyTypeName);
     }
 }

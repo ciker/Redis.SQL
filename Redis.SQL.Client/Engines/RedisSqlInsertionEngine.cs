@@ -59,7 +59,7 @@ namespace Redis.SQL.Client.Engines
             }
         }
         
-        private async Task AddPropertyToStore(string entityName, string identifier, string propertyTypeName, string propertyName, string propertyValue)
+        public async Task AddPropertyToStore(string entityName, string identifier, string propertyTypeName, string propertyName, string propertyValue)
         {
             VerifyValueType(propertyTypeName, propertyValue);
             var encodedPropertyValue = Helpers.EncodePropertyValue(propertyTypeName, propertyValue).ToLower();
@@ -76,7 +76,7 @@ namespace Redis.SQL.Client.Engines
             await _stringClient.IncrementValue(Helpers.GetEntityCountKey(entityName));
         }
 
-        private async Task<string> EncodeEntity(string entityName, string identifier, IDictionary<string, string> propertyValues)
+        public async Task<string> EncodeEntity(string entityName, string identifier, IDictionary<string, string> propertyValues)
         {
             var entity = string.Empty;
             foreach (var item in propertyValues)
