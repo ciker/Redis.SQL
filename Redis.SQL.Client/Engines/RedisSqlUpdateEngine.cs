@@ -3,6 +3,7 @@ using Redis.SQL.Client.Analyzer.Interfaces;
 using Redis.SQL.Client.Analyzer.Lexers;
 using Redis.SQL.Client.Analyzer.Parsers;
 using Redis.SQL.Client.Engines.Interfaces;
+using Redis.SQL.Client.Models;
 
 namespace Redis.SQL.Client.Engines
 {
@@ -22,6 +23,7 @@ namespace Redis.SQL.Client.Engines
         public Task ExecuteUpdateStatement(string sql)
         {
             var tokens = _updateLexicalTokenizer.Tokenize(sql);
+            var model = (UpdateModel)_updateParser.ParseTokens(tokens);
 
             return null;
         }
