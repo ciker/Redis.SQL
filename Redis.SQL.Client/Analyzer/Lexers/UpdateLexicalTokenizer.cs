@@ -12,45 +12,45 @@ namespace Redis.SQL.Client.Analyzer.Lexers
 
             string updateKeyword = Keywords.Update.ToString(), setKeyword = Keywords.Set.ToString(), whereKeyword = Keywords.Where.ToString(), token = string.Empty;
 
-            bool setKeywordTokenized = false, stringToken = false;
+            var stringToken = false;
 
             for (var i = 0; i < statement.Length; i++)
             {
                 if (statement[i] == '\'') stringToken = !stringToken;
 
-                if(statement[i] == ' ' && !setKeywordTokenized) continue;
+                if(statement[i] == ' ' && !stringToken) continue;
 
-                if (statement.Substring(i).StartsWithKeyword(updateKeyword, ' ') && tokens.Count == 0)
+                if (!stringToken && statement.Substring(i).StartsWithKeyword(updateKeyword, ' ') && tokens.Count == 0)
                 {
                     token = tokens.AddLexicalToken(updateKeyword, string.Empty);
                     i += updateKeyword.Length;
                 }
 
-                if (statement.Substring(i).StartsWithKeyword(setKeyword, ' ') && !setKeywordTokenized)
+                if (!stringToken && statement.Substring(i).StartsWithKeyword(setKeyword, ' '))
                 {
                     token = tokens.AddLexicalToken(token?.Trim(), Constants.EntityNamePattern);
                     tokens.AddLexicalToken(setKeyword, string.Empty);
                     i += setKeyword.Length;
-                    setKeywordTokenized = true;
                 }
 
-                if (setKeywordTokenized && !stringToken && statement[i] == ',')
+                if (!stringToken && statement[i] == ',')
                 {
-                    token = tokens.AddLexicalToken(token?.Trim(), Constants.WhereClauseTokenPattern);
+                    token = tokens.AddLexicalToken(token?.Trim(), Constants.UpdateClauseTokenPattern);
+                    continue;
                 }
 
-                if (setKeywordTokenized && statement.Substring(i).StartsWithKeyword(whereKeyword, ' ', '('))
+                if (!stringToken && statement.Substring(i).StartsWithKeyword(whereKeyword, ' ', '('))
                 {
-                    token = tokens.AddLexicalToken(token?.Trim(), Constants.WhereClauseTokenPattern);
+                    token = tokens.AddLexicalToken(token?.Trim(), Constants.UpdateClauseTokenPattern);
                     tokens.AddLexicalToken(whereKeyword, string.Empty);
-                    tokens.AddLexicalToken(statement.Substring(i), string.Empty);
+                    tokens.AddLexicalToken(statement.Substring(i + whereKeyword.Length)?.Trim(), string.Empty);
                     break;
                 }
 
                 token += statement[i];
             }
 
-            tokens.AddLexicalToken(token, string.Empty);
+            tokens.AddLexicalToken(token?.Trim(), Constants.UpdateClauseTokenPattern);
 
             return tokens;
         }
