@@ -37,7 +37,6 @@ namespace Redis.SQL.Client
 
         internal const string PropertyValuePattern = @"^([\d.-]+|'.*'|[tT][rR][uU][eE]|[fF][aA][lL][sS][eE])$";
 
-
         internal const string WhereClauseTokenPattern = @"^(([\w-]+|[\w-]+.[\w-]+)(!=|=|>=|>|<|<=)+([\d.-]+|'.*'|[tT]rue|[fF]alse)+|[aA][nN][dD]|[oO][rR]|\(|\))$";
 
         internal static readonly Grammar WhereGrammar = new Grammar(GrammarType.Where);

@@ -10,6 +10,8 @@
         Create,
         Insert,
         Values,
-        Delete
+        Delete,
+        Update,
+        Set
     }
 }
