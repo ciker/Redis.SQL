@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -42,11 +41,8 @@ namespace Redis.SQL.Client.Engines
             foreach (var key in updatedKeys)
             {
                 var entityStoreKey = Helpers.GetEntityStoreKey(model.EntityName, key);
-
                 var encodedEntity = await _stringClient.GetValue(entityStoreKey);
-
                 var entity = JsonConvert.DeserializeObject<dynamic>(encodedEntity);
-
                 await UpdateEntity(entity, model.UpdatedProperties, model.EntityName, key);
             }
         }
@@ -56,17 +52,21 @@ namespace Redis.SQL.Client.Engines
             var updatedEntityProps = new Dictionary<string, string>();
             foreach (var property in entity)
             {
-                var name = property.Name;
+                var name = property.Name.ToLower();
                 var propertyTypeName = await _hashClient.GetHashField(Helpers.GetEntityPropertyTypesKey(entityName), name);
                 var value = (property as IEnumerable<dynamic>)?.FirstOrDefault()?.Value?.ToString();
-                
-                if (updatedProps.Any(x => string.Equals(x.Key, name, StringComparison.OrdinalIgnoreCase)))
-                {
-                    await _deltionEngine.PurgeProperty(entityName, key, name, value, propertyTypeName);
-                    await _insertionEngine.AddPropertyToStore(entityName, key, propertyTypeName, name, value);
-                }
 
-                updatedEntityProps.Add(name, value);
+                if (updatedProps.TryGetValue(name.ToLower(), out string updatedValue))
+                {
+                    updatedValue = updatedValue.Trim(' ', '\'');
+                    await _deltionEngine.PurgeProperty(entityName, key, name, value, propertyTypeName);
+                    await _insertionEngine.AddPropertyToStore(entityName, key, propertyTypeName, name, updatedValue);
+                    updatedEntityProps.Add(name, updatedValue);
+                }
+                else
+                {
+                    updatedEntityProps.Add(name, value);
+                }
             }
 
             var updatedEntity = await _insertionEngine.EncodeEntity(entityName, key, updatedEntityProps);

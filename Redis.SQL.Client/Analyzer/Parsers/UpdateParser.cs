@@ -35,7 +35,7 @@ namespace Redis.SQL.Client.Analyzer.Parsers
                     var split = token.Split('=');
                     var property = split[0];
                     var value = string.Join(string.Empty, split.Skip(1));
-                    result.UpdatedProperties.Add(property, value);
+                    result.UpdatedProperties.Add(property.ToLower(), value);
                 }
 
                 if (token == setKeyword && !setKeywordParsed)

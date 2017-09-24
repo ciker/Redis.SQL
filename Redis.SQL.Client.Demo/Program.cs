@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace Redis.SQL.Client.Demo
 {
@@ -8,9 +9,47 @@ namespace Redis.SQL.Client.Demo
         {
             var client = new RedisSqlClient();
 
-            client.Create<User>();
+            //var u1 = new User
+            //{
+            //    Name = "Ahmed",
+            //    Age = 30,
+            //    Created = DateTime.Now,
+            //    Class = 'b',
+            //    Id = 100,
+            //    StartTime = TimeSpan.FromHours(3)
+            //};
 
-            //client.ExecuteSql("update user set name     = ' ah me=d,'  , age=30   where id=123 ");
+            //var u2 = new User
+            //{
+            //    Name = "John",
+            //    Age = 25,
+            //    Created = DateTime.Now.AddHours(3),
+            //    Class = 'a',
+            //    Id = 101,
+            //    StartTime = TimeSpan.FromHours(3)
+            //};
+
+            //var u3 = new User
+            //{
+            //    Name = "Mark",
+            //    Age = 30,
+            //    Created = DateTime.Now.AddDays(1),
+            //    Class = 'b',
+            //    Id = 102,
+            //    StartTime = TimeSpan.FromHours(10)
+            //};
+
+            //client.ExecuteSql("delete user where id =100");
+
+            //client.Insert(u1);
+            //client.Insert(u2);
+            //client.Insert(u3);
+
+            //client.Create<User>();
+
+            //client.ExecuteSql("insert user(name, age, created, starttime,   id, class) values ('ramy', 40, '9/24/2017', '03:00:00', 110, 'a')");
+
+            client.ExecuteSql("update user set name     = ' rah me=d,'  , age=30   where id=100 ");
 
             Console.ReadLine();
         }
@@ -19,9 +58,10 @@ namespace Redis.SQL.Client.Demo
     public class User
     {
         public string Name { get; set; }
-        public string Age { get; set; }
+        public int Age { get; set; }
         public DateTime Created { get; set; }
         public TimeSpan StartTime { get; set; }
+        [Key]
         public long Id { get; set; }
         public char Class { get; set; }
     }
