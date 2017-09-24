@@ -42,6 +42,15 @@ namespace Redis.SQL.Client.Engines
             return entities.Select(JsonConvert.DeserializeObject<TEntity>).ToList();
         }
 
+        public async Task<TEntity> GetEntityByKey<TEntity>(string key)
+        {
+            var entityName = Helpers.GetTypeName<TEntity>();
+
+            var entityJson = await RetrieveEntityJsonByKey(entityName, key);
+
+            return JsonConvert.DeserializeObject<TEntity>(entityJson);
+        }
+
         public async Task<IEnumerable<dynamic>> QueryEntities(string entityName, string condition)
         {
             var entities = await GetSerializedEntities(entityName, condition);

@@ -9,38 +9,39 @@ namespace Redis.SQL.Client.Demo
         {
             var client = new RedisSqlClient();
 
-            //var u1 = new User
-            //{
-            //    Name = "Ahmed",
-            //    Age = 30,
-            //    Created = DateTime.Now,
-            //    Class = 'b',
-            //    Id = 100,
-            //    StartTime = TimeSpan.FromHours(3)
-            //};
+            var u1 = new User
+            {
+                Name = "TESTING",
+                Age = 12,
+                Created = new DateTime(2017, 12, 12),
+                Class = 'd',
+                Id = 100,
+                StartTime = TimeSpan.FromHours(23)
+            };
 
-            //var u2 = new User
-            //{
-            //    Name = "John",
-            //    Age = 25,
-            //    Created = DateTime.Now.AddHours(3),
-            //    Class = 'a',
-            //    Id = 101,
-            //    StartTime = TimeSpan.FromHours(3)
-            //};
+            var u2 = new User
+            {
+                Name = "John",
+                Age = 25,
+                Created = DateTime.Now.AddHours(3),
+                Class = 'a',
+                Id = 101,
+                StartTime = TimeSpan.FromHours(3)
+            };
 
-            //var u3 = new User
-            //{
-            //    Name = "Mark",
-            //    Age = 30,
-            //    Created = DateTime.Now.AddDays(1),
-            //    Class = 'b',
-            //    Id = 102,
-            //    StartTime = TimeSpan.FromHours(10)
-            //};
+            var u3 = new User
+            {
+                Name = "Mark",
+                Age = 30,
+                Created = DateTime.Now.AddDays(1),
+                Class = 'b',
+                Id = 102,
+                StartTime = TimeSpan.FromHours(10)
+            };
 
             //client.ExecuteSql("delete user where id =100");
 
+            client.Update(u1);
             //client.Insert(u1);
             //client.Insert(u2);
             //client.Insert(u3);
@@ -49,7 +50,7 @@ namespace Redis.SQL.Client.Demo
 
             //client.ExecuteSql("insert user(name, age, created, starttime,   id, class) values ('ramy', 40, '9/24/2017', '03:00:00', 110, 'a')");
 
-            client.ExecuteSql("update user set name     = ' rah me=d,'  , age=30   where id=100 ");
+            //client.ExecuteSql("update user set name     = ' rah me=d,'  , age=19   where id=100 ");
 
             Console.ReadLine();
         }
