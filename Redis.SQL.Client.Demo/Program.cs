@@ -11,7 +11,7 @@ namespace Redis.SQL.Client.Demo
 
             var u1 = new User
             {
-                Name = "TESTING",
+                Name = "   test  white  space    ",
                 Age = 12,
                 Created = new DateTime(2017, 12, 12),
                 Class = 'd',
@@ -39,6 +39,8 @@ namespace Redis.SQL.Client.Demo
                 StartTime = TimeSpan.FromHours(10)
             };
 
+            //client.ExecuteSql("create user( name:string,   age:int32, created:datetime, starttime:timespan, verified:boolean, class:char, id:int64)   ");
+
             //client.ExecuteSql("delete user where id =100");
 
             client.Update(u1);
@@ -46,11 +48,17 @@ namespace Redis.SQL.Client.Demo
             //client.Insert(u2);
             //client.Insert(u3);
 
+            //var result = client.Query<User>(x => x.Id == 100);
+            //result.ContinueWith(x =>
+            //{
+            //    var n = x.Result;
+            //});
+
             //client.Create<User>();
 
-            //client.ExecuteSql("insert user(name, age, created, starttime,   id, class) values ('ramy', 40, '9/24/2017', '03:00:00', 110, 'a')");
+            //client.ExecuteSql("insert user(name, age, created, starttime,   id, class) values (       '   r a my  '     , 40, '9/24/2017', '03:00:00', 110, 'a')");
 
-            //client.ExecuteSql("update user set name     = ' rah me=d,'  , age=19   where id=100 ");
+            //client.ExecuteSql("update user set name     = '    rah   me=d,    '  , age=19   where id=110 ");
 
             Console.ReadLine();
         }

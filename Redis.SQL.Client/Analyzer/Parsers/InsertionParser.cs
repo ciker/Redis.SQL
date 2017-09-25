@@ -50,7 +50,7 @@ namespace Redis.SQL.Client.Analyzer.Parsers
                 }
                 else
                 {
-                    values.Add(token.Trim(' ', '\''));
+                    values.Add(token.Trim('\''));
                 }
 
                 tokens.RemoveAt(0);

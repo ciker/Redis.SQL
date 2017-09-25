@@ -105,7 +105,7 @@ namespace Redis.SQL.Client.Engines
 
                 if (updatedProps.TryGetValue(name.ToLower(), out string updatedValue))
                 {
-                    updatedValue = updatedValue.Trim(' ', '\'');
+                    updatedValue = updatedValue.Trim('\'');
                     await UpdateProperty(name, value, updatedValue, entityName, key);
                     updatedEntityProps.Add(name, updatedValue);
                 }
