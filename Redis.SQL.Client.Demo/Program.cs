@@ -11,8 +11,6 @@ namespace Redis.SQL.Client.Demo
         {
             MainAsync().GetAwaiter().GetResult();
 
-
-            
             Console.ReadLine();
         }
 
@@ -20,19 +18,20 @@ namespace Redis.SQL.Client.Demo
         {
             var client = new RedisSqlClient();
 
-            await client.Create<Employee>();
+            //await client.Create<Employee>();
 
             var employees = GetEmployees().ToList();
 
-            foreach (var employee in employees)
-            {
-                await client.Insert(employee);
-            }
+            //foreach (var employee in employees)
+            //{
+            //    await client.Insert(employee);
+            //}
 
             var rnd = new Random();
 
             var randomEmployee = employees[rnd.Next(0, employees.Count - 1)];
-            var warmUpQuery = await client.Query<Employee>(x => x.Name == randomEmployee.Name);
+            var second = employees[rnd.Next(0, employees.Count - 1)];
+            var warmUpQuery = await client.Query<Employee>(x => x.Name == randomEmployee.Name || x.Age == second.Age);
         }
 
 

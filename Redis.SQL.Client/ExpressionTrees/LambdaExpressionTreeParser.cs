@@ -150,20 +150,40 @@ namespace Redis.SQL.Client.ExpressionTrees
                 return;
             }
 
-            var val = (member.Expression as ConstantExpression)?.Value;
-            var variableName = member.Member?.Name;
-
-            if (_variables == null)
+            if (member.Expression is ConstantExpression constant)
             {
-                _variables = val?.GetType().GetFields();
+                var val = constant.Value;
+                var variableName = member.Member?.Name;
+
+                if (_variables == null)
+                {
+                    _variables = val?.GetType().GetFields();
+                }
+
+                rhs = _variables?.FirstOrDefault(x => x.Name == variableName)?.GetValue(val)?.ToString();
+                var leftBinType = bin.Left.Type;
+
+                if (leftBinType == StringType || leftBinType == CharType || leftBinType == DateTimeType ||
+                    leftBinType == TimeSpanType)
+                {
+                    rhs = $"'{rhs}'";
+                }
             }
-
-            rhs = _variables?.FirstOrDefault(x => x.Name == variableName)?.GetValue(val)?.ToString();
-            var leftBinType = bin.Left.Type;
-
-            if (leftBinType == StringType || leftBinType == CharType || leftBinType == DateTimeType || leftBinType == TimeSpanType)
+            else
             {
-                rhs = $"'{rhs}'";
+                //TODO: Refactor this
+                var constantExpression = (member.Expression as MemberExpression)?.Expression as ConstantExpression;
+                var val = constantExpression?.Value;
+                var variableName = member.Member?.Name;
+                var fields = val?.GetType().GetFields();
+                var leftBinType = bin.Left.Type;
+
+                if (leftBinType == StringType || leftBinType == CharType || leftBinType == DateTimeType ||
+                    leftBinType == TimeSpanType)
+                {
+                    //rhs = $"'{rhs}'";
+                }
+                rhs = null;
             }
         }
 
