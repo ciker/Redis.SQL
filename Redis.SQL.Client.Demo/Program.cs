@@ -1,5 +1,7 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Redis.SQL.Client.Demo
 {
@@ -7,71 +9,54 @@ namespace Redis.SQL.Client.Demo
     {
         public static void Main(string[] args)
         {
-            var client = new RedisSqlClient();
+            MainAsync().GetAwaiter().GetResult();
 
-            var u1 = new User
-            {
-                Name = "   test  white  space    ",
-                Age = 12,
-                Created = new DateTime(2017, 12, 12),
-                Class = 'd',
-                Id = 100,
-                StartTime = TimeSpan.FromHours(23)
-            };
 
-            var u2 = new User
-            {
-                Name = "John",
-                Age = 25,
-                Created = DateTime.Now.AddHours(3),
-                Class = 'a',
-                Id = 101,
-                StartTime = TimeSpan.FromHours(3)
-            };
-
-            var u3 = new User
-            {
-                Name = "Mark",
-                Age = 30,
-                Created = DateTime.Now.AddDays(1),
-                Class = 'b',
-                Id = 102,
-                StartTime = TimeSpan.FromHours(10)
-            };
-
-            //client.ExecuteSql("create user( name:string,   age:int32, created:datetime, starttime:timespan, verified:boolean, class:char, id:int64)   ");
-
-            //client.ExecuteSql("delete user where id =100");
-
-            client.Update(u1);
-            //client.Insert(u1);
-            //client.Insert(u2);
-            //client.Insert(u3);
-
-            //var result = client.Query<User>(x => x.Id == 100);
-            //result.ContinueWith(x =>
-            //{
-            //    var n = x.Result;
-            //});
-
-            //client.Create<User>();
-
-            //client.ExecuteSql("insert user(name, age, created, starttime,   id, class) values (       '   r a my  '     , 40, '9/24/2017', '03:00:00', 110, 'a')");
-
-            //client.ExecuteSql("update user set name     = '    rah   me=d,    '  , age=19   where id=110 ");
-
+            
             Console.ReadLine();
         }
-    }
 
-    public class User
-    {
-        public string Name { get; set; }
-        public int Age { get; set; }
-        public DateTime Created { get; set; }
-        public TimeSpan StartTime { get; set; }
-        [Key]
-        public long Id { get; set; }
-        public char Class { get; set; }
+        private static async Task MainAsync()
+        {
+            var client = new RedisSqlClient();
+
+            await client.Create<Employee>();
+
+            var employees = GetEmployees().ToList();
+
+            foreach (var employee in employees)
+            {
+                await client.Insert(employee);
+            }
+
+            var rnd = new Random();
+
+            var randomEmployee = employees[rnd.Next(0, employees.Count - 1)];
+            var warmUpQuery = await client.Query<Employee>(x => x.Name == randomEmployee.Name);
+        }
+
+
+        private static IEnumerable<Employee> GetEmployees()
+        {
+            var rnd = new Random();
+            const string departments = "ABCDEF";
+
+            var result = new List<Employee>();
+            for (var i = 0; i < 100; i++)
+            {
+                result.Add(new Employee
+                {
+                    Name = Guid.NewGuid().ToString(),
+                    Age = rnd.Next(18, 70),
+                    Department = departments[rnd.Next(0, departments.Length - 1)],
+                    Id = i,
+                    ShiftStartTime = TimeSpan.FromHours(rnd.Next(0, 24)),
+                    Insured = i % 5 != 0,
+                    Joined = new DateTime(rnd.Next(2000, 2018), rnd.Next(1, 13), rnd.Next(1, 29))
+                });
+            }
+
+            return result;
+        }
     }
 }
