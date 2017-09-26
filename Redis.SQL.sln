@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Redis.SQL.Client", "Redis.S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Redis.SQL.Client.Demo", "Redis.SQL.Client.Demo\Redis.SQL.Client.Demo.csproj", "{8A4DA02B-5AF6-4515-9A09-4A128C696BBA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Redis.SQL.Client.Manager", "Redis.SQL.Client.Manager\Redis.SQL.Client.Manager.csproj", "{8BE1E99F-E191-4538-838C-BA85FEDC3458}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{8A4DA02B-5AF6-4515-9A09-4A128C696BBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8A4DA02B-5AF6-4515-9A09-4A128C696BBA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8A4DA02B-5AF6-4515-9A09-4A128C696BBA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8BE1E99F-E191-4538-838C-BA85FEDC3458}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8BE1E99F-E191-4538-838C-BA85FEDC3458}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8BE1E99F-E191-4538-838C-BA85FEDC3458}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8BE1E99F-E191-4538-838C-BA85FEDC3458}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
