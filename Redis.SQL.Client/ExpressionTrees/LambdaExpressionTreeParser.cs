@@ -49,7 +49,7 @@ namespace Redis.SQL.Client.ExpressionTrees
                     EvaluateMember(member, bin, out rhs);
                 }
                 
-                if (bin.Left.NodeType == ExpressionType.Convert)
+                if (bin.Left.NodeType == ExpressionType.Convert || bin.Right.NodeType == ExpressionType.Convert)
                 {
                     ConvertNode(bin, out lhs, out rhs);
                 }
@@ -93,25 +93,26 @@ namespace Redis.SQL.Client.ExpressionTrees
 
         private void ConvertNode(BinaryExpression bin, out string lhs, out string rhs)
         {
-            var operand = (bin.Left as UnaryExpression)?.Operand;
+            var operand = (bin.Left as UnaryExpression)?.Operand ?? (bin.Left as MemberExpression);
 
             var type = operand?.Type;
-            if (type == ExpressionTreeHelpers.CharType)
+            rhs = null;
+            lhs = operand?.ToString();
+            if (bin.Right is UnaryExpression unary && unary.Operand is MemberExpression member) //Direct access
             {
-                lhs = operand?.ToString();
-                if (bin.Right is UnaryExpression unary && unary.Operand is MemberExpression member)
+                EvaluateMember(member, bin, out rhs);
+                if (type == ExpressionTreeHelpers.CharType)
                 {
-                    EvaluateMember(member, bin, out rhs);
                     rhs = $"'{rhs}'";
                 }
-                else
+            }
+            else //Access via a variable
+            {
+                if (type == ExpressionTreeHelpers.CharType)
                 {
                     rhs = $"'{(char)int.Parse(bin.Right.ToString())}'";
                 }
-                return;
             }
-
-            throw new LambdaExpressionParsingException();
         }
 
         private string GetMemberValue(MemberExpression member, ConstantExpression constant)
