@@ -25,7 +25,7 @@ Redis.SQL currently supports the following data types:
 -datetime
 -timespan
 
-##Insertion
+## Insertion
 
 After creating your entity, you can insert new data using the following format:
 
@@ -37,7 +37,7 @@ insert user (name, id, joined) values ('Ahmed', 1, '9/24/2017')
 
 Note that all char, string, datetime and timespan values should be enclosed within single quotes.
 
-#Projection
+## Projection
 
 To project an entity from your data store, use the following format:
 
@@ -51,7 +51,7 @@ select * from user where (name = 'ahmed' and age = 23) or verified = false
 
 select user.joined from user where verified = true
 
-#Deletion
+## Deletion
 
 To delete an entity from your data store, use the following format:
 
@@ -65,7 +65,7 @@ delete user where name = 'ahmed'
 
 delete user
 
-#Updating
+## Updating
 
 To update an entity, use the following format
 
@@ -78,6 +78,18 @@ Example:
 update user set name = 'john', age = 50, verified = false where id = 30
 
 update user set deleted = true
+
+# ORM
+
+Frameworks such as EntityFramework provide developers with the ability to map their database entities to strongly typed objects in their code. Redis.SQL aims to provide developers with a similar functionality by translating provided expression trees into Redis.SQL language.
+
+Example:
+
+![alt text](https://github.com/asarnaout/Redis.SQL/master/MapperExample.png)
+
+Note that all Redis.SQL APIs are async APIs that return Tasks.
+
+Please refer to Redis.SQL.Client.Demo for more examples.
 
 # Redis Data Structures
 
