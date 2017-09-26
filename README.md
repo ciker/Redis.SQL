@@ -85,7 +85,7 @@ Frameworks such as EntityFramework provide developers with the ability to map th
 
 Example:
 
-![alt text](https://github.com/asarnaout/Redis.SQL/master/MapperExample.png)
+![alt text](https://raw.githubusercontent.com/asarnaout/Redis.SQL/master/MapperExample.png)
 
 Note that all Redis.SQL APIs are async APIs that return Tasks.
 
