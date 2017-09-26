@@ -49,7 +49,7 @@ Example
 
 *select * from user where (name = 'ahmed' and age = 23) or verified = false*
 
-*select user.joined from user where verified = true*
+*select user.joined, user.verified from user where verified = true*
 
 ## Deletion
 
