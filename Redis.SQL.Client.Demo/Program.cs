@@ -35,9 +35,9 @@ namespace Redis.SQL.Client.Demo
             var randomEmployee2 = employees[GetRandom()];
             var randomEmployee3 = employees[GetRandom()];
 
-            var val = randomEmployee1.Insured;
-            var test = await client.Query<Employee>(x => x.Insured == !!!randomEmployee1.Insured);
-            //var warmUpQuery = await client.Query<Employee>(x => (x.Name == randomEmployee1.Name || x.Age >= randomEmployee2.Age) && x.Insured != randomEmployee3.Insured);
+
+            var warmUpQuery = await client.Query<Employee>(x => (x.Name == randomEmployee1.Name 
+                || x.Age >= randomEmployee2.Age) && x.Insured == !randomEmployee3.Insured && x.Department <= 'c');
         }
 
 

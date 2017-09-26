@@ -35,7 +35,7 @@ namespace Redis.SQL.Client.RedisClients
         {
             if (string.IsNullOrEmpty(maxValue)) maxValue = default(RedisValue);
             if (string.IsNullOrEmpty(minValue)) minValue = default(RedisValue);
-            return (await _redisDatabase.SortedSetRangeByValueAsync(key.ToLower(), minValue, maxValue)).Select(x => x.ToString());
+            return (await _redisDatabase.SortedSetRangeByValueAsync(key.ToLower(), minValue?.ToLower(), maxValue?.ToLower())).Select(x => x.ToString());
         }
 
         public async Task<bool> AddToSortedSet<T>(string key, T value, double score = 0D)

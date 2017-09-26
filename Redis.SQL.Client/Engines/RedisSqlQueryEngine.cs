@@ -159,7 +159,7 @@ namespace Redis.SQL.Client.Engines
                 range = await (score.HasValue? GetRangeByScore(entityName, property, score.Value, double.PositiveInfinity) 
                     : GetRangeByValue(entityName, property, value, string.Empty));
 
-                range = op == Operator.GreaterThan ? range.Where(x => x != value) : range; //Filter equal values
+                range = op == Operator.GreaterThan ? range.FilterStringIgnoreCase(value) : range; //Filter equal values
             }
 
             if (op == Operator.LessThanOrEqualTo || op == Operator.LessThan)
@@ -167,12 +167,12 @@ namespace Redis.SQL.Client.Engines
                 range = await (score.HasValue? GetRangeByScore(entityName, property, double.NegativeInfinity, score.Value) 
                     :  GetRangeByValue(entityName, property, string.Empty, value));
 
-                range = op == Operator.LessThan ? range.Where(x => x != value) : range; //Filter equal values
+                range = op == Operator.LessThan ? range.FilterStringIgnoreCase(value) : range; //Filter equal values
             }
 
             if (op == Operator.NotEqual)
             {
-                range = (await GetRangeByValue(entityName, property, string.Empty, string.Empty)).Where(x => x != value);
+                range = (await GetRangeByValue(entityName, property, string.Empty, string.Empty)).FilterStringIgnoreCase(value);
             }
 
             return await MapRangeToKeys(range, entityName, property);
