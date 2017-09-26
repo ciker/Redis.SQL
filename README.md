@@ -13,7 +13,7 @@ create Entity (property: type,...)
 
 Example:
 
-create user (name:string, id:int64)
+*create user (name:string, id:int64)*
 
 Redis.SQL currently supports the following data types:
 
@@ -33,7 +33,7 @@ insert entity (comma_separated_properties) values (comma_separated_values)
 
 Example: 
 
-insert user (name, id, joined) values ('Ahmed', 1, '9/24/2017')
+*insert user (name, id, joined) values ('Ahmed', 1, '9/24/2017')*
 
 Note that all char, string, datetime and timespan values should be enclosed within single quotes.
 
@@ -47,9 +47,9 @@ Note that providing the where expression is not obligatory.
 
 Example
 
-select * from user where (name = 'ahmed' and age = 23) or verified = false
+*select * from user where (name = 'ahmed' and age = 23) or verified = false*
 
-select user.joined from user where verified = true
+*select user.joined from user where verified = true*
 
 ## Deletion
 
@@ -61,9 +61,9 @@ Note that providing the where expression is not obligatory.
 
 Example:
 
-delete user where name = 'ahmed'
+*delete user where name = 'ahmed'*
 
-delete user
+*delete user*
 
 ## Updating
 
@@ -75,9 +75,9 @@ Note that providing the where expression is not obligatory.
 
 Example:
 
-update user set name = 'john', age = 50, verified = false where id = 30
+*update user set name = 'john', age = 50, verified = false where id = 30*
 
-update user set deleted = true
+*update user set deleted = true*
 
 # ORM
 
