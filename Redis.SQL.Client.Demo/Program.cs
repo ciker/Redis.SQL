@@ -7,23 +7,6 @@ namespace Redis.SQL.Client.Demo
 {
     public class Program
     {
-        public class Person
-        {
-            public string Identifier { get; set; }
-        }
-
-        public class Account
-        {
-            public Person Person { get; set; }
-        }
-
-        public class User
-        {
-            public string Name { get; set; }
-
-            public Account PersonalAccount { get; set; }
-        }
-
         public static void Main(string[] args)
         {
             MainAsync().GetAwaiter().GetResult();
@@ -41,18 +24,20 @@ namespace Redis.SQL.Client.Demo
 
             foreach (var employee in employees)
             {
-            //    await client.Insert(employee);
+                //await client.Insert(employee);
             }
 
             var rnd = new Random();
 
-            var randomEmployee = employees[rnd.Next(0, employees.Count - 1)];
-            var second = employees[rnd.Next(0, employees.Count - 1)];
-            var u1 = new User(){Name = "TEST USER", PersonalAccount = new Account{ Person = new Person{Identifier = "IDENTIFIERVALUE"}}};
-            var Name = "abc";
-            var warmUpQuery = await client.Query<Employee>(x => x.Name == u1.PersonalAccount.Person.Identifier 
-            || x.Name == Name || x.Age == second.Age || x.Insured == randomEmployee.Insured || x.Insured 
-            || !x.Insured || x.Joined == DateTime.Now);
+            int GetRandom() => rnd.Next(0, employees.Count - 1);
+
+            var randomEmployee1 = employees[GetRandom()];
+            var randomEmployee2 = employees[GetRandom()];
+            var randomEmployee3 = employees[GetRandom()];
+
+            var val = randomEmployee1.Insured;
+            var test = await client.Query<Employee>(x => x.Insured == !!!randomEmployee1.Insured);
+            //var warmUpQuery = await client.Query<Employee>(x => (x.Name == randomEmployee1.Name || x.Age >= randomEmployee2.Age) && x.Insured != randomEmployee3.Insured);
         }
 
 
@@ -62,7 +47,7 @@ namespace Redis.SQL.Client.Demo
             const string departments = "ABCDEF";
 
             var result = new List<Employee>();
-            for (var i = 0; i < 100; i++)
+            for (var i = 0; i < 1000; i++)
             {
                 result.Add(new Employee
                 {

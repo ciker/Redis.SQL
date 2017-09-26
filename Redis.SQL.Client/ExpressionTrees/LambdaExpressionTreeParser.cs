@@ -54,12 +54,43 @@ namespace Redis.SQL.Client.ExpressionTrees
                     ConvertNode(bin, out lhs, out rhs);
                 }
 
+                if (bin.Right.NodeType == ExpressionType.Not)
+                {
+                    rhs = HandleNotExpression(bin);
+                }
+
                 return $"{result}{lhs} {ExpressionTreeHelpers.GetOperator(bin.NodeType)} {rhs?.Replace(@"""", "'")}";
             }
 
             return string.Empty;
         }
-        
+
+        internal string HandleNotExpression(BinaryExpression bin)
+        {
+            var negated = true;
+
+            if (bin.Right is UnaryExpression unary)
+            {
+                var exp = unary.Operand;
+                while (exp is UnaryExpression sub) //Handling multiple negations
+                {
+                    if (sub.NodeType == ExpressionType.Not)
+                    {
+                        negated = !negated;
+                    }
+                    exp = sub.Operand;
+                }
+
+                if (exp is MemberExpression member)
+                {
+                    EvaluateMember(member, bin, out var result);
+                    return $"{bool.Parse(result) && !negated}";
+                }
+            }
+
+            return null;
+        }
+
         private void ConvertNode(BinaryExpression bin, out string lhs, out string rhs)
         {
             var operand = (bin.Left as UnaryExpression)?.Operand;
