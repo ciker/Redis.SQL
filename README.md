@@ -19,7 +19,7 @@ Note that all Redis.SQL APIs are async APIs that return Tasks.
 Please refer to Redis.SQL.Client.Demo for more examples.
 
 
-#Management Console
+# Management Console
 
 Using the management console, you only need to provide the connection string for your redis data store and provide sql like statements to manage your store.
 
