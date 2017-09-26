@@ -4,6 +4,23 @@ Redis.SQL is a project aiming to provide an interface for developers to work wit
 
 Redis.SQL is built over .NET Core and uses StackExchange's Redis client for communicating with the Redis datastore. (More on: https://github.com/StackExchange/StackExchange.Redis)
 
+Redis.SQL provides you with a management console and an ORM to manage your redis data store in your flavor of choice.
+
+# ORM
+
+Frameworks such as EntityFramework provide developers with the ability to map their database entities to strongly typed objects in their code. Redis.SQL aims to provide developers APIs to manage their Redis data store from within the code. These APIs will translate the provided lambda expression trees to SQL-like syntax and query the data store.
+
+Example:
+
+![alt text](https://raw.githubusercontent.com/asarnaout/Redis.SQL/master/MapperExample.png)
+
+Note that all Redis.SQL APIs are async APIs that return Tasks.
+
+Please refer to Redis.SQL.Client.Demo for more examples.
+
+
+#Management Console
+
 Using the management console, you only need to provide the connection string for your redis data store and provide sql like statements to manage your store.
 
 ## Creation
@@ -78,15 +95,3 @@ Example:
 *update user set name = 'john', age = 50, verified = false where id = 30*
 
 *update user set deleted = true*
-
-# ORM
-
-Frameworks such as EntityFramework provide developers with the ability to map their database entities to strongly typed objects in their code. Redis.SQL aims to provide developers with a similar functionality by translating provided expression trees into Redis.SQL language.
-
-Example:
-
-![alt text](https://raw.githubusercontent.com/asarnaout/Redis.SQL/master/MapperExample.png)
-
-Note that all Redis.SQL APIs are async APIs that return Tasks.
-
-Please refer to Redis.SQL.Client.Demo for more examples.
