@@ -9,26 +9,6 @@ namespace Redis.SQL.Client.ExpressionTrees
 {
     internal class LambdaExpressionTreeParser : ILambdaExpressionTreeParser
     {
-        private static readonly Type BooleanType = typeof(bool);
-
-        private static readonly Type CharType = typeof(char);
-
-        private static readonly Type StringType = typeof(string);
-
-        private static readonly Type DateTimeType = typeof(DateTime);
-
-        private static readonly Type TimeSpanType = typeof(TimeSpan);
-
-        private static readonly ExpressionType[] Operators =
-        {
-            ExpressionType.Equal,
-            ExpressionType.GreaterThan,
-            ExpressionType.GreaterThanOrEqual,
-            ExpressionType.LessThan,
-            ExpressionType.LessThanOrEqual,
-            ExpressionType.NotEqual
-        };
-
         private FieldInfo[] _variables;
 
         private readonly object _locker;
@@ -44,7 +24,7 @@ namespace Redis.SQL.Client.ExpressionTrees
             lock (_locker)
             {
                 _variables = null;
-                return ParseExpressionTree(string.Empty, ToBinary(expr.Body));
+                return ParseExpressionTree(string.Empty, ExpressionTreeHelpers.ToBinary(expr.Body));
             }
         }
 
@@ -52,15 +32,15 @@ namespace Redis.SQL.Client.ExpressionTrees
         {
             if (bin.NodeType == ExpressionType.OrElse || bin.NodeType == ExpressionType.Or)
             {
-                return $"{result}({ParseExpressionTree(result, ToBinary(bin.Left))}) or ({ParseExpressionTree(result, ToBinary(bin.Right))})";
+                return $"{result}({ParseExpressionTree(result, ExpressionTreeHelpers.ToBinary(bin.Left))}) or ({ParseExpressionTree(result, ExpressionTreeHelpers.ToBinary(bin.Right))})";
             }
 
             if (bin.NodeType == ExpressionType.AndAlso || bin.NodeType == ExpressionType.And)
             {
-                return $"{result}({ParseExpressionTree(result, ToBinary(bin.Left))}) and ({ParseExpressionTree(result, ToBinary(bin.Right))})";
+                return $"{result}({ParseExpressionTree(result, ExpressionTreeHelpers.ToBinary(bin.Left))}) and ({ParseExpressionTree(result, ExpressionTreeHelpers.ToBinary(bin.Right))})";
             }
 
-            if (Operators.Contains(bin.NodeType))
+            if (ExpressionTreeHelpers.Operators.Contains(bin.NodeType))
             {
                 string lhs = bin.Left.ToString(), rhs = bin.Right.ToString();
 
@@ -74,57 +54,18 @@ namespace Redis.SQL.Client.ExpressionTrees
                     ConvertNode(bin, out lhs, out rhs);
                 }
 
-                return $"{result}{lhs} {GetOperator(bin.NodeType)} {rhs?.Replace(@"""", "'")}";
+                return $"{result}{lhs} {ExpressionTreeHelpers.GetOperator(bin.NodeType)} {rhs?.Replace(@"""", "'")}";
             }
 
             return string.Empty;
         }
-
-        private static string GetOperator(ExpressionType type)
-        {
-            switch (type)
-            {
-                case ExpressionType.Equal: return "=";
-                case ExpressionType.GreaterThan: return ">";
-                case ExpressionType.GreaterThanOrEqual: return ">=";
-                case ExpressionType.LessThan: return "<";
-                case ExpressionType.LessThanOrEqual: return "<=";
-                case ExpressionType.NotEqual: return "!=";
-            }
-
-            throw new LambdaExpressionParsingException("Unsupported operator");
-        }
         
-        private static BinaryExpression ToBinary(Expression expr)
-        {
-            if (expr is BinaryExpression bin) return bin;
-
-            if (expr.NodeType == ExpressionType.Not)
-            {
-                return BooleanExpression((expr as UnaryExpression)?.Operand.ToString(), false);
-            }
-
-            if (expr.NodeType == ExpressionType.MemberAccess)
-            {
-                return BooleanExpression((expr as MemberExpression)?.ToString(), true);
-            }
-
-            throw new LambdaExpressionParsingException();
-        }
-
-        private static BinaryExpression BooleanExpression(string paramName, bool boolean)
-        {
-            var boolParam = Expression.Parameter(BooleanType, paramName);
-            var value = Expression.Constant(boolean, typeof(bool));
-            return Expression.Equal(boolParam, value);
-        }
-
         private void ConvertNode(BinaryExpression bin, out string lhs, out string rhs)
         {
             var operand = (bin.Left as UnaryExpression)?.Operand;
 
             var type = operand?.Type;
-            if (type == CharType)
+            if (type == ExpressionTreeHelpers.CharType)
             {
                 lhs = operand?.ToString();
                 if (bin.Right is UnaryExpression unary && unary.Operand is MemberExpression member)
@@ -141,66 +82,60 @@ namespace Redis.SQL.Client.ExpressionTrees
 
             throw new LambdaExpressionParsingException();
         }
-        
+
+        private string GetMemberValue(MemberExpression member, ConstantExpression constant)
+        {
+            var accessVariables = ExpressionTreeHelpers.GetAccessVariables(member).ToList();
+
+            if (!accessVariables.Any())
+            {
+                throw new LambdaExpressionParsingException();
+            }
+
+            var obj = _variables?.FirstOrDefault(x => x.Name == accessVariables[0])?.GetValue(constant.Value);
+
+            accessVariables.RemoveAt(0);
+
+            foreach (var variable in accessVariables)
+            {
+                var type = ExpressionTreeHelpers.CachedReflection(obj);
+                obj = type.GetField(variable)?.GetValue(obj) ?? type.GetProperty(variable)?.GetValue(obj);
+            }
+
+            return obj?.ToString();
+        }
+
         private void EvaluateMember(MemberExpression member, BinaryExpression bin, out string rhs)
         {
             if (member.Expression == null)
             {
-                rhs = EvaluateProperty(member);
+                rhs = ExpressionTreeHelpers.EvaluateProperty(member);
                 return;
             }
 
-            if (member.Expression is ConstantExpression constant)
+            var constant = ExpressionTreeHelpers.GetConstantExpression(member);
+
+            if (constant == null)
             {
-                var val = constant.Value;
-                var variableName = member.Member?.Name;
-
-                if (_variables == null)
-                {
-                    _variables = val?.GetType().GetFields();
-                }
-
-                rhs = _variables?.FirstOrDefault(x => x.Name == variableName)?.GetValue(val)?.ToString();
-                var leftBinType = bin.Left.Type;
-
-                if (leftBinType == StringType || leftBinType == CharType || leftBinType == DateTimeType ||
-                    leftBinType == TimeSpanType)
-                {
-                    rhs = $"'{rhs}'";
-                }
-            }
-            else
-            {
-                //TODO: Refactor this
-                var constantExpression = (member.Expression as MemberExpression)?.Expression as ConstantExpression;
-                var val = constantExpression?.Value;
-                var variableName = member.Member?.Name;
-                var fields = val?.GetType().GetFields();
-                var leftBinType = bin.Left.Type;
-
-                if (leftBinType == StringType || leftBinType == CharType || leftBinType == DateTimeType ||
-                    leftBinType == TimeSpanType)
-                {
-                    //rhs = $"'{rhs}'";
-                }
-                rhs = null;
-            }
-        }
-
-        private static string EvaluateProperty(MemberExpression member)
-        {
-            var memberInfo = member.Member;
-            var declaringType = memberInfo.DeclaringType;
-
-            var property = declaringType.GetProperty(memberInfo.Name);
-
-            if (property == null)
-            {
-                var field = declaringType.GetField(memberInfo.Name);
-                return $"'{field?.GetValue(null)}'";
+                throw new LambdaExpressionParsingException();
             }
 
-            return $"'{property.GetValue(null)}'";
+            var val = constant.Value;
+
+            if (_variables == null)
+            {
+                _variables = val?.GetType().GetFields();
+            }
+
+            rhs = GetMemberValue(member, constant);
+
+            var leftBinType = bin.Left.Type;
+
+            if (leftBinType == ExpressionTreeHelpers.StringType || leftBinType == ExpressionTreeHelpers.CharType 
+                || leftBinType == ExpressionTreeHelpers.DateTimeType || leftBinType == ExpressionTreeHelpers.TimeSpanType)
+            {
+                rhs = $"'{rhs}'";
+            }
         }
     }
 }

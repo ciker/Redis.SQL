@@ -7,6 +7,23 @@ namespace Redis.SQL.Client.Demo
 {
     public class Program
     {
+        public class Person
+        {
+            public string Identifier { get; set; }
+        }
+
+        public class Account
+        {
+            public Person Person { get; set; }
+        }
+
+        public class User
+        {
+            public string Name { get; set; }
+
+            public Account PersonalAccount { get; set; }
+        }
+
         public static void Main(string[] args)
         {
             MainAsync().GetAwaiter().GetResult();
@@ -22,16 +39,20 @@ namespace Redis.SQL.Client.Demo
 
             var employees = GetEmployees().ToList();
 
-            //foreach (var employee in employees)
-            //{
+            foreach (var employee in employees)
+            {
             //    await client.Insert(employee);
-            //}
+            }
 
             var rnd = new Random();
 
             var randomEmployee = employees[rnd.Next(0, employees.Count - 1)];
             var second = employees[rnd.Next(0, employees.Count - 1)];
-            var warmUpQuery = await client.Query<Employee>(x => x.Name == randomEmployee.Name || x.Age == second.Age);
+            var u1 = new User(){Name = "TEST USER", PersonalAccount = new Account{ Person = new Person{Identifier = "IDENTIFIERVALUE"}}};
+            var Name = "abc";
+            var warmUpQuery = await client.Query<Employee>(x => x.Name == u1.PersonalAccount.Person.Identifier 
+            || x.Name == Name || x.Age == second.Age || x.Insured == randomEmployee.Insured || x.Insured 
+            || !x.Insured || x.Joined == DateTime.Now);
         }
 
 
